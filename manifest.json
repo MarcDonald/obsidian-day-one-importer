@@ -1,0 +1,10 @@
+{
+	"id": "day-one-importer",
+	"name": "Day One Importer",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Allows you to import Day One JSON into Obsidian",
+	"author": "Marc Donald",
+	"authorUrl": "https://marcdonald.com",
+	"isDesktopOnly": false
+}
