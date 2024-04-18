@@ -3,10 +3,12 @@ import { SettingsTab } from './settings-tab';
 
 interface DayOneImporterSettings {
 	importDirectory: string;
+	exportDirectory: string;
 }
 
 const DEFAULT_SETTINGS: DayOneImporterSettings = {
-	importDirectory: 'day-one',
+	importDirectory: 'day-one-import',
+	exportDirectory: 'day-one-export',
 };
 
 export default class DayOneImporter extends Plugin {
