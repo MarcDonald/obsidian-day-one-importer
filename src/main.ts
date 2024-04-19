@@ -1,14 +1,16 @@
 import { Plugin } from 'obsidian';
 import { SettingsTab } from './settings-tab';
 
-interface DayOneImporterSettings {
-	importDirectory: string;
-	exportDirectory: string;
+export interface DayOneImporterSettings {
+	inFileName: string;
+	inDirectory: string;
+	outDirectory: string;
 }
 
 const DEFAULT_SETTINGS: DayOneImporterSettings = {
-	importDirectory: 'day-one-import',
-	exportDirectory: 'day-one-export',
+	inDirectory: 'day-one-in',
+	inFileName: 'journal.json',
+	outDirectory: 'day-one-out',
 };
 
 export default class DayOneImporter extends Plugin {
