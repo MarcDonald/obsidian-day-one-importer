@@ -1,6 +1,9 @@
-import { App, Notice, PluginSettingTab, Setting } from 'obsidian';
+import { App, moment, Notice, PluginSettingTab, Setting } from 'obsidian';
 import DayOneImporter from './main';
 import { importJson } from './import-json';
+import * as path from 'node:path';
+
+const ILLEGAL_FILENAME_CHARACTERS = ['[', ']', ':', '\\', '/', '^', '|', '#'];
 
 export class SettingsTab extends PluginSettingTab {
 	plugin: DayOneImporter;
@@ -50,12 +53,94 @@ export class SettingsTab extends PluginSettingTab {
 					})
 			);
 
+		new Setting(containerEl).setName('File name').setHeading();
+
+		new Setting(containerEl)
+			.setName('Date-based File Names (may cause collisions)')
+			.setDesc(
+				"Use entry's creation date as the file name. This may cause collisions and files to be overwritten if two entries have the same creation date/time." +
+					"If this option is disabled then the entry's UUID will be used as the file name. This guarantees no collisions."
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.dateBasedFileNames)
+					.onChange(async (value) => {
+						this.plugin.settings.dateBasedFileNames = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName('Date-based File Name Format')
+			.addMomentFormat((timeFormat) =>
+				timeFormat
+					.setValue(this.plugin.settings.dateBasedFileNameFormat.toString())
+					.setPlaceholder('YYYY-MM-DD HH:mm:ss')
+					.onChange(async (value) => {
+						if (value !== '') {
+							if (isIllegalFileName(value)) {
+								new Notice(
+									`File name cannot contain any of the following characters: ${ILLEGAL_FILENAME_CHARACTERS.join('')}`
+								);
+							} else {
+								this.plugin.settings.dateBasedFileNameFormat = value;
+								await this.plugin.saveSettings();
+							}
+						}
+					})
+			);
+
+		new Setting(containerEl)
+			.setName('Date-based File Name Format (All Day Entries)')
+			.addMomentFormat((timeFormat) =>
+				timeFormat
+					.setValue(
+						this.plugin.settings.dateBasedAllDayFileNameFormat.toString()
+					)
+					.setPlaceholder('YYYY-MM-DD')
+					.onChange(async (value) => {
+						if (value !== '') {
+							if (isIllegalFileName(value)) {
+								new Notice(
+									`File name cannot contain any of the following characters: ${ILLEGAL_FILENAME_CHARACTERS.join('')}`
+								);
+							} else {
+								this.plugin.settings.dateBasedAllDayFileNameFormat = value;
+								await this.plugin.saveSettings();
+							}
+						}
+					})
+			);
+
 		new Setting(containerEl).addButton((button) =>
 			button.setButtonText('Import').onClick(() => {
 				button.setDisabled(true);
 				importJson(this.app.vault, this.plugin.settings)
-					.then((res) => {
-						new Notice(JSON.stringify(res));
+					.then(async (res) => {
+						new Notice(
+							`Successful: ${res.successCount} - Failed: ${res.failures.length}`
+						);
+
+						res.failures.forEach((failure) => {
+							new Notice(
+								`Entry ${failure.entry.uuid} failed to import. ${failure.reason}`
+							);
+						});
+
+						if (res.failures.length > 0) {
+							await this.app.vault.create(
+								path.join(
+									this.plugin.settings.outDirectory,
+									'Failed Imports.md'
+								),
+								res.failures
+									.map(
+										(failure) =>
+											`- ${failure.entry.uuid} - ${moment(failure.entry.creationDate).format('YYYY-MM-DD HH:mm:ss')}\n  - ${failure.reason}`
+									)
+									.join('\n')
+							);
+						}
 					})
 					.catch((err) => {
 						new Notice(err);
@@ -66,4 +151,10 @@ export class SettingsTab extends PluginSettingTab {
 			})
 		);
 	}
+}
+
+function isIllegalFileName(fileName: string): boolean {
+	return ILLEGAL_FILENAME_CHARACTERS.some((illegal) =>
+		fileName.contains(illegal)
+	);
 }

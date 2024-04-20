@@ -22,11 +22,28 @@ export async function importJson(
 		console.log(`Found ${entries.length} journal entries`);
 
 		let successCount = 0;
-		let failureCount = 0;
+		const failures: any[] = [];
+
+		const fileNames = new Set();
 
 		entries.forEach((item: any) => {
 			try {
-				const fileName = `${item.uuid}.md`;
+				let fileName: string;
+				if (settings.dateBasedFileNames) {
+					if (item.isAllDay) {
+						fileName = `${moment(item.creationDate).format(settings.dateBasedAllDayFileNameFormat)}.md`;
+					} else {
+						fileName = `${moment(item.creationDate).format(settings.dateBasedFileNameFormat)}.md`;
+					}
+				} else {
+					fileName = `${item.uuid}.md`;
+				}
+
+				if (fileNames.has(fileName)) {
+					throw new Error(`A file named ${fileName} already exists`);
+				} else {
+					fileNames.add(fileName);
+				}
 
 				let fileData = '---\n';
 				fileData += buildFrontmatterProperty(
@@ -77,14 +94,17 @@ export async function importJson(
 				successCount++;
 			} catch (e) {
 				console.error(e);
-				failureCount++;
+				failures.push({
+					entry: item,
+					reason: e.message,
+				});
 			}
 		});
 
 		return Promise.resolve({
 			total: entries.length,
-			successes: successCount,
-			failures: failureCount,
+			successCount: successCount,
+			failures,
 		});
 	} catch (err) {
 		console.error(err);

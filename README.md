@@ -10,6 +10,7 @@ Easily convert your Day One journals into Obsidian markdown.
 
 - Text entries
 - Rich text
+- Date-based file names or UUID file names
 
 #### Added to frontmatter
 
@@ -24,5 +25,7 @@ Easily convert your Day One journals into Obsidian markdown.
 
 - Images
 - Videos
-- Customizable file names
+
+### Not Currently Planned
+
 - Customizable metadata formats (i.e not in frontmatter)

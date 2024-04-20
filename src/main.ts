@@ -5,12 +5,18 @@ export interface DayOneImporterSettings {
 	inFileName: string;
 	inDirectory: string;
 	outDirectory: string;
+	dateBasedFileNames: boolean;
+	dateBasedFileNameFormat: string;
+	dateBasedAllDayFileNameFormat: string;
 }
 
 const DEFAULT_SETTINGS: DayOneImporterSettings = {
 	inDirectory: 'day-one-in',
 	inFileName: 'journal.json',
 	outDirectory: 'day-one-out',
+	dateBasedFileNames: false,
+	dateBasedFileNameFormat: 'YYYY-MM-DD HHmmss',
+	dateBasedAllDayFileNameFormat: 'YYYY-MM-DD',
 };
 
 export default class DayOneImporter extends Plugin {
