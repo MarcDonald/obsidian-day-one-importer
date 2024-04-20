@@ -6,5 +6,9 @@
 	"description": "Allows you to import Day One JSON into Obsidian",
 	"author": "Marc Donald",
 	"authorUrl": "https://marcdonald.com",
+	"fundingUrl": {
+		"GitHub Sponsor": "https://github.com/sponsors/MarcDonald?frequency=one-time",
+		"Tip Jar": "https://buy.stripe.com/14kfZD1Wv8xTaUo7st"
+	},
 	"isDesktopOnly": true
 }
