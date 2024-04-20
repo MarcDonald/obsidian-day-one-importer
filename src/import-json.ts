@@ -23,10 +23,10 @@ export async function importJson(
 
 		let successCount = 0;
 		let failureCount = 0;
+
 		entries.forEach((item: any) => {
 			try {
-				const fileName =
-					moment(item.creationDate).format(`YYYYMMDDHHMMss`) + '.md';
+				const fileName = `${item.uuid}.md`;
 
 				let fileData = '---\n';
 				fileData += buildFrontmatterProperty(
