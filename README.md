@@ -11,6 +11,7 @@ Easily convert your Day One journals into Obsidian markdown.
 - Text entries
 - Rich text
 - Date-based file names or UUID file names
+- Inline images and videos
 
 #### Added to frontmatter
 
@@ -20,11 +21,6 @@ Easily convert your Day One journals into Obsidian markdown.
 - If entry is "all day"
 - Location (name)
 - Activity (e.g. walking, cycling, train, flying, etc)
-
-### Planned
-
-- Images
-- Videos
 
 ### Not Currently Planned
 

@@ -40,7 +40,7 @@ export async function importJson(
 				fileData += buildFrontmatter(item);
 
 				// Day One seems to export escaped full stops for some reason, so replace those with just a regular full stop
-				fileData += `${(item.text as string).replace(/\\./gm, '.')}`;
+				fileData += buildFileBody(item);
 
 				vault.create(`${settings.outDirectory}/${fileName}`, fileData, {
 					ctime: new Date(item.creationDate).getTime(),
@@ -131,4 +131,57 @@ function buildFrontmatterProperty(
 	}
 
 	return `${propertyName}: ${propertyValue}\n`;
+}
+
+function buildFileBody(item: any): string {
+	if (typeof item.text !== 'string') {
+		throw new Error('item.text is not a string');
+	}
+
+	let returned = `${(item.text as string).replace(/\\./gm, '.')}`;
+
+	const photoMoments = Array.from(
+		returned.matchAll(/!\[]\(dayone-moment:\/\/([^)]+)\)/g)
+	);
+
+	const videoMoments = Array.from(
+		returned.matchAll(/!\[]\(dayone-moment:\/video\/([^)]+)\)/g)
+	);
+
+	const replacements = [...photoMoments, ...videoMoments].map((match) =>
+		buildMediaReplacement(item, match)
+	);
+
+	if (replacements.length > 0) {
+		replacements.forEach((replacement) => {
+			returned = returned.replace(replacement.replace, replacement.with);
+		});
+	}
+
+	return returned;
+}
+
+function buildMediaReplacement(item: any, match: RegExpMatchArray) {
+	let mediaObj = item.photos?.find((p: any) => p.identifier === match[1]);
+
+	if (!mediaObj) {
+		mediaObj = item.videos?.find((p: any) => p.identifier === match[1]);
+	}
+
+	if (mediaObj) {
+		const mediaFileName = `${mediaObj.md5}.${mediaObj.type}`;
+		console.log(`Replacing ${match[0]} with ![]${mediaFileName}`);
+		return {
+			replace: match[0],
+			with: `![](${mediaFileName})`,
+		};
+	}
+
+	console.error(
+		`Could not find photo or video with identifier ${match[1]} in entry ${item.uuid}`
+	);
+	return {
+		replace: match[0],
+		with: match[0],
+	};
 }

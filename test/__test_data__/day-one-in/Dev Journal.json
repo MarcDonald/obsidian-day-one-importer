@@ -162,19 +162,67 @@
 					"isSketch": false
 				}
 			],
+			"videos": [
+				{
+					"favorite": false,
+					"fileSize": 5896918,
+					"orderInEntry": 0,
+					"width": 1920,
+					"type": "mp4",
+					"identifier": "E5B4E8C8B7EB4291AFDFFACB966A0382",
+					"date": "2024-04-21T22:45:51Z",
+					"height": 1080,
+					"creationDevice": "marcBook Pro",
+					"duration": 2.8410899999999999,
+					"md5": "842e6f3bf38e93981004c637e8b03967"
+				}
+			],
 			"editingTime": 40.863040924072266,
 			"modifiedDate": "2024-04-19T21:57:00Z",
 			"starred": false,
 			"isPinned": false,
 			"creationOSName": "macOS",
 			"isAllDay": false,
-			"text": "Ipsum labore tempor eu elit voluptate incididunt sint ea enim aute do minim\\. Quis mollit ullamco nostrud dolore id id commodo veniam consequat commodo dolore ullamco tempor tempor commodo\\. Lorem tempor laboris in ipsum ea veniam laboris id sit dolor anim sit consequat nulla et\\. Nostrud est magna proident nostrud\\. Velit aliqua consectetur non ea id sit nostrud irure ut\\. Nostrud ut id consequat commodo ea labore laborum nisi in duis nisi\\. Aliquip nisi deserunt id laborum excepteur\\.\n\n![](dayone-moment://24BD79E9E42F4A4CA0C9F384F547B5BC)\n\n![](dayone-moment://031C8B7DAE0349BAA27892008778F6F6)",
+			"text": "Ipsum labore tempor eu elit voluptate incididunt sint ea enim aute do minim\\. Quis mollit ullamco nostrud dolore id id commodo veniam consequat commodo dolore ullamco tempor tempor commodo\\. Lorem tempor laboris in ipsum ea veniam laboris id sit dolor anim sit consequat nulla et\\.![](dayone-moment://24BD79E9E42F4A4CA0C9F384F547B5BC). Nostrud est magna proident nostrud\\. Velit aliqua consectetur non ea id sit nostrud irure ut\\. Nostrud ut id consequat commodo ea labore laborum nisi in duis nisi\\. Aliquip nisi deserunt id laborum excepteur\\.\n\n![](dayone-moment://031C8B7DAE0349BAA27892008778F6F6)",
 			"duration": 0,
 			"richText": "{\"contents\":[{\"text\":\"Ipsum labore tempor eu elit voluptate incididunt sint ea enim aute do minim. Quis mollit ullamco nostrud dolore id id commodo veniam consequat commodo dolore ullamco tempor tempor commodo. Lorem tempor laboris in ipsum ea veniam laboris id sit dolor anim sit consequat nulla et. Nostrud est magna proident nostrud. Velit aliqua consectetur non ea id sit nostrud irure ut. Nostrud ut id consequat commodo ea labore laborum nisi in duis nisi. Aliquip nisi deserunt id laborum excepteur.\\n\"},{\"embeddedObjects\":[{\"identifier\":\"24BD79E9E42F4A4CA0C9F384F547B5BC\",\"type\":\"photo\"}]},{\"embeddedObjects\":[{\"identifier\":\"031C8B7DAE0349BAA27892008778F6F6\",\"type\":\"photo\"}]}],\"meta\":{\"created\":{\"platform\":\"com.bloombuilt.dayone-mac\",\"version\":1552},\"small-lines-removed\":true,\"version\":1}}",
 			"creationDate": "2024-04-19T21:55:53Z",
 			"creationDeviceType": "MacBook Pro",
 			"timeZone": "Europe/London",
 			"creationDeviceModel": "MacBookPro18,3"
+		},
+		{
+			"creationDevice": "marcBook Pro",
+			"isPinned": false,
+			"editingTime": 10.006034016609192,
+			"creationDeviceModel": "MacBookPro18,3",
+			"duration": 0,
+			"text": "![](dayone-moment:/video/6F9B2DC7EADE4242A80DC76470D2264E)",
+			"videos": [
+				{
+					"favorite": false,
+					"fileSize": 2845124,
+					"orderInEntry": 0,
+					"width": 1920,
+					"type": "mp4",
+					"identifier": "6F9B2DC7EADE4242A80DC76470D2264E",
+					"date": "2024-04-21T22:59:54Z",
+					"height": 1080,
+					"creationDevice": "marcBook Pro",
+					"duration": 5.710108843537415,
+					"md5": "d500d6789ff2c211af3f507b17be8e66"
+				}
+			],
+			"creationOSVersion": "14.3.1",
+			"uuid": "959E7A13B3B649D681DC573DB7E07967",
+			"timeZone": "Europe/London",
+			"modifiedDate": "2024-04-21T22:46:02Z",
+			"creationDeviceType": "MacBook Pro",
+			"creationOSName": "macOS",
+			"isAllDay": false,
+			"richText": "{\"contents\":[{\"embeddedObjects\":[{\"identifier\":\"E5B4E8C8B7EB4291AFDFFACB966A0382\",\"type\":\"video\"}]}],\"meta\":{\"created\":{\"platform\":\"com.bloombuilt.dayone-mac\",\"version\":1552},\"small-lines-removed\":true,\"version\":1}}",
+			"creationDate": "2024-04-21T22:45:51Z",
+			"starred": false
 		}
 	]
 }

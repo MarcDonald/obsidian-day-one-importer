@@ -167,7 +167,7 @@ describe('importJson', () => {
 				'2. List number 2\n\n' +
 				'`Code span` \n\n' +
 				'```\nCode block\n```\n\n\n' +
-				'![](dayone-moment://646FD9CE9D924262ADB1FA7AF3A2F4DB)'
+				'![](31c871f18f68d2fde4196ccba1f8ece1.jpeg)'
 		);
 		expect(vault.create.mock.calls[0][2]).toEqual({
 			ctime: 1713308400000,
@@ -219,13 +219,28 @@ describe('importJson', () => {
 				'modifiedDate: 2024-04-19T21:57\n' +
 				'location: London Eye, London, United Kingdom\n' +
 				'---\n' +
-				'Ipsum labore tempor eu elit voluptate incididunt sint ea enim aute do minim. Quis mollit ullamco nostrud dolore id id commodo veniam consequat commodo dolore ullamco tempor tempor commodo. Lorem tempor laboris in ipsum ea veniam laboris id sit dolor anim sit consequat nulla et. Nostrud est magna proident nostrud. Velit aliqua consectetur non ea id sit nostrud irure ut. Nostrud ut id consequat commodo ea labore laborum nisi in duis nisi. Aliquip nisi deserunt id laborum excepteur.\n\n!' +
-				'[](dayone-moment://24BD79E9E42F4A4CA0C9F384F547B5BC)\n\n' +
-				'![](dayone-moment://031C8B7DAE0349BAA27892008778F6F6)'
+				'Ipsum labore tempor eu elit voluptate incididunt sint ea enim aute do minim. Quis mollit ullamco nostrud dolore id id commodo veniam consequat commodo dolore ullamco tempor tempor commodo. Lorem tempor laboris in ipsum ea veniam laboris id sit dolor anim sit consequat nulla et.![](31c871f18f68d2fde4196ccba1f8ece1.jpeg). Nostrud est magna proident nostrud. Velit aliqua consectetur non ea id sit nostrud irure ut. Nostrud ut id consequat commodo ea labore laborum nisi in duis nisi. Aliquip nisi deserunt id laborum excepteur.\n\n' +
+				'![](6b73e9bd86a91d3a7ead09268b0fb266.jpeg)'
 		);
 		expect(vault.create.mock.calls[3][2]).toEqual({
 			ctime: 1713563753000,
 			mtime: 1713563820000,
+		});
+
+		// entry 5
+		expect(vault.create.mock.calls[4][0]).toBe(
+			'day-one-out/959E7A13B3B649D681DC573DB7E07967.md'
+		);
+		expect(vault.create.mock.calls[4][1]).toBe(
+			'---\n' +
+				'creationDate: 2024-04-21T22:45\n' +
+				'modifiedDate: 2024-04-21T22:46\n' +
+				'---\n' +
+				'![](d500d6789ff2c211af3f507b17be8e66.mp4)'
+		);
+		expect(vault.create.mock.calls[4][2]).toEqual({
+			ctime: 1713739551000,
+			mtime: 1713739562000,
 		});
 	});
 });
