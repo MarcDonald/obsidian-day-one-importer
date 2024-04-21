@@ -46,9 +46,11 @@ describe('importJson', () => {
 				entries: [
 					{
 						uuid: 'abc123',
+						text: 'abc',
 					},
 					{
 						uuid: 'abc123',
+						text: 'abc',
 					},
 				],
 			})
@@ -69,9 +71,11 @@ describe('importJson', () => {
 				entries: [
 					{
 						creationDate: '2024-04-19T21:55:53Z',
+						text: 'abc',
 					},
 					{
 						creationDate: '2023-03-11T11:15:33Z',
+						text: 'abc',
 						isAllDay: true,
 					},
 				],
@@ -101,11 +105,13 @@ describe('importJson', () => {
 					{
 						creationDate: '2024-04-19T21:55:53Z',
 						uuid: 'abc123',
+						text: 'abc',
 					},
 					{
 						creationDate: '2023-03-11T11:15:33Z',
 						isAllDay: true,
 						uuid: 'def456',
+						text: 'abc',
 					},
 				],
 			})
@@ -178,7 +184,7 @@ describe('importJson', () => {
 				'modifiedDate: 2024-04-19T21:49\n' +
 				'isAllDay: true\n' +
 				'---\n' +
-				'Pariatur aute nulla incididunt\\. Ad dolor irure est in magna est\\. Ut ex Lorem reprehenderit incididunt enim eiusmod et\\. Aute sit duis labore quis tempor laborum eiusmod ut ad labore ad\\.\n\nPariatur aute nulla incididunt\\. Ad dolor irure est in magna est\\. Ut ex Lorem reprehenderit incididunt enim eiusmod et\\. Aute sit duis labore quis tempor laborum eiusmod ut ad labore ad\\.'
+				'Pariatur aute nulla incididunt. Ad dolor irure est in magna est. Ut ex Lorem reprehenderit incididunt enim eiusmod et. Aute sit duis labore quis tempor laborum eiusmod ut ad labore ad.\n\nDolore fugiat qui duis do cupidatat. Amet ut ad aute elit dolor. Lorem nisi adipisicing elit consectetur officia reprehenderit sunt cupidatat reprehenderit in anim est est occaecat duis. Ut veniam ad id aliqua ex excepteur consequat tempor ut eu ex deserunt duis. Consequat labore minim ea veniam Lorem laboris esse minim velit do nostrud nisi ullamco. Dolore adipisicing do ea.'
 		);
 		expect(vault.create.mock.calls[1][2]).toEqual({
 			ctime: 1713394800000,
@@ -196,7 +202,7 @@ describe('importJson', () => {
 				'pinned: true\n' +
 				'location: Dundas Castle, Edinburgh, United Kingdom\n' +
 				'---\n' +
-				'Dolore ex commodo aliqua irure ullamco quis aliquip\\. Consectetur et magna ullamco amet nisi\\. Ut commodo officia laborum aliquip Lorem adipisicing ipsum do amet consequat\\. Fugiat officia dolore aute do quis sunt exercitation\\. Pariatur sint exercitation ut eiusmod velit sint exercitation ullamco minim commodo qui tempor adipisicing esse amet\\. Lorem ad sit ullamco dolore labore commodo ea ad officia quis deserunt\\. Adipisicing duis qui elit ipsum aliqua ipsum ea\\.'
+				'Dolore ex commodo aliqua irure ullamco quis aliquip. Consectetur et magna ullamco amet nisi. Ut commodo officia laborum aliquip Lorem adipisicing ipsum do amet consequat. Fugiat officia dolore aute do quis sunt exercitation. Pariatur sint exercitation ut eiusmod velit sint exercitation ullamco minim commodo qui tempor adipisicing esse amet. Lorem ad sit ullamco dolore labore commodo ea ad officia quis deserunt. Adipisicing duis qui elit ipsum aliqua ipsum ea.'
 		);
 		expect(vault.create.mock.calls[2][2]).toEqual({
 			ctime: 1713563316000,
@@ -213,7 +219,7 @@ describe('importJson', () => {
 				'modifiedDate: 2024-04-19T21:57\n' +
 				'location: London Eye, London, United Kingdom\n' +
 				'---\n' +
-				'Ipsum labore tempor eu elit voluptate incididunt sint ea enim aute do minim\\. Quis mollit ullamco nostrud dolore id id commodo veniam consequat commodo dolore ullamco tempor tempor commodo\\. Lorem tempor laboris in ipsum ea veniam laboris id sit dolor anim sit consequat nulla et\\. Nostrud est magna proident nostrud\\. Velit aliqua consectetur non ea id sit nostrud irure ut\\. Nostrud ut id consequat commodo ea labore laborum nisi in duis nisi\\. Aliquip nisi deserunt id laborum excepteur\\.\n\n!' +
+				'Ipsum labore tempor eu elit voluptate incididunt sint ea enim aute do minim. Quis mollit ullamco nostrud dolore id id commodo veniam consequat commodo dolore ullamco tempor tempor commodo. Lorem tempor laboris in ipsum ea veniam laboris id sit dolor anim sit consequat nulla et. Nostrud est magna proident nostrud. Velit aliqua consectetur non ea id sit nostrud irure ut. Nostrud ut id consequat commodo ea labore laborum nisi in duis nisi. Aliquip nisi deserunt id laborum excepteur.\n\n!' +
 				'[](dayone-moment://24BD79E9E42F4A4CA0C9F384F547B5BC)\n\n' +
 				'![](dayone-moment://031C8B7DAE0349BAA27892008778F6F6)'
 		);

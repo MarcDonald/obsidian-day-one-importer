@@ -38,7 +38,9 @@ export async function importJson(
 				let fileData = '';
 
 				fileData += buildFrontmatter(item);
-				fileData += `${item.text}`;
+
+				// Day One seems to export escaped full stops for some reason, so replace those with just a regular full stop
+				fileData += `${(item.text as string).replace(/\\./gm, '.')}`;
 
 				vault.create(`${settings.outDirectory}/${fileName}`, fileData, {
 					ctime: new Date(item.creationDate).getTime(),
