@@ -10,7 +10,7 @@ export interface DayOneImporterSettings {
 	dateBasedAllDayFileNameFormat: string;
 }
 
-const DEFAULT_SETTINGS: DayOneImporterSettings = {
+export const DEFAULT_SETTINGS: DayOneImporterSettings = {
 	inDirectory: 'day-one-in',
 	inFileName: 'journal.json',
 	outDirectory: 'day-one-out',

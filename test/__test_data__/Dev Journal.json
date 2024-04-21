@@ -1,0 +1,180 @@
+{
+	"metadata": {
+		"version": "1.0"
+	},
+	"entries": [
+		{
+			"photos": [
+				{
+					"fileSize": 1287214,
+					"orderInEntry": 0,
+					"creationDevice": "marcBook Pro",
+					"duration": 0,
+					"favorite": false,
+					"type": "jpeg",
+					"identifier": "646FD9CE9D924262ADB1FA7AF3A2F4DB",
+					"date": "2024-03-24T18:28:37Z",
+					"exposureBiasValue": 0,
+					"height": 2064,
+					"width": 1179,
+					"md5": "31c871f18f68d2fde4196ccba1f8ece1",
+					"isSketch": false
+				}
+			],
+			"modifiedDate": "2024-04-19T21:55:51Z",
+			"creationOSVersion": "14.3.1",
+			"creationOSName": "macOS",
+			"editingTime": 162.41393291950226,
+			"richText": "{\"contents\":[{\"attributes\":{\"line\":{\"header\":1,\"identifier\":\"97C1F02A-AD6A-4958-A2CD-7DEF2CFCEFC9\"}},\"text\":\"Header 1\\n\"},{\"attributes\":{\"line\":{\"header\":2,\"identifier\":\"5AD4DC37-2107-47B7-9A10-520BA80F5498\"}},\"text\":\"Header 2\\n\"},{\"attributes\":{\"line\":{\"header\":3,\"identifier\":\"384F7393-BC32-44DF-B421-407ED9069ECA\"}},\"text\":\"Header 3\\n\"},{\"attributes\":{\"line\":{\"header\":4,\"identifier\":\"5B986D3D-5945-40D9-A3E1-9B29106DF106\"}},\"text\":\"Header 4\\n\"},{\"attributes\":{\"line\":{\"header\":5,\"identifier\":\"E63246F2-B1E7-4E73-839F-0E2BD777F368\"}},\"text\":\"Header 5\\n\"},{\"attributes\":{\"line\":{\"header\":6,\"identifier\":\"23F8CAF1-CB50-4EE2-A12E-218BED8BDEED\"}},\"text\":\"Header 6\\n\"},{\"text\":\"\\n\"},{\"attributes\":{\"line\":{\"identifier\":\"090FA921-F533-44E7-AA0D-F5EC26B7B988\",\"indentLevel\":1,\"quote\":true}},\"text\":\"Quote block\\n\"},{\"text\":\"\\n\"},{\"attributes\":{\"highlightedColor\":\"ffc107cc\"},\"text\":\"Highlighted\"},{\"text\":\"\\n\"},{\"embeddedObjects\":[{\"type\":\"horizontalRuleLine\"}]},{\"text\":\"\\n\"},{\"attributes\":{\"bold\":true},\"text\":\"Bold\"},{\"text\":\"\\n\\n\"},{\"attributes\":{\"italic\":true},\"text\":\"Italic\"},{\"text\":\"\\n\\n\"},{\"attributes\":{\"line\":{\"identifier\":\"922F95FD-82CB-47BA-95D7-23635C9C6D24\",\"indentLevel\":1,\"listStyle\":\"bulleted\"}},\"text\":\"List item 1\\n\"},{\"attributes\":{\"line\":{\"identifier\":\"F06E92C2-F5EB-4FBC-B4B4-FB8A9F13191C\",\"indentLevel\":1,\"listStyle\":\"bulleted\"}},\"text\":\"List item 2\\n\"},{\"attributes\":{\"line\":{\"header\":0,\"identifier\":\"540854B9-6C7D-49A2-AECB-EA83117A2E4D\"}},\"text\":\"\\n\"},{\"attributes\":{\"line\":{\"checked\":false,\"identifier\":\"8A478D32-B2A9-449A-B60D-EB134F4484C0\",\"indentLevel\":1,\"listStyle\":\"checkbox\"}},\"text\":\"Check item 1\\n\"},{\"attributes\":{\"line\":{\"checked\":false,\"identifier\":\"30FFE5F8-0E62-4B23-B9BD-BAE7001B6632\",\"indentLevel\":1,\"listStyle\":\"checkbox\"}},\"text\":\"Check item 2\\n\"},{\"attributes\":{\"line\":{\"header\":0,\"identifier\":\"6DD02DDA-C931-4BEE-9DAA-CCE3400BF7E8\"}},\"text\":\"\\n\"},{\"attributes\":{\"line\":{\"identifier\":\"C4EED428-FC18-4657-A8AF-4F0B5F056322\",\"indentLevel\":1,\"listIndex\":1,\"listStyle\":\"numbered\"}},\"text\":\"List number 1\\n\"},{\"attributes\":{\"line\":{\"identifier\":\"20207BDA-480B-445E-9008-05DF19BB1AEF\",\"indentLevel\":1,\"listIndex\":2,\"listStyle\":\"numbered\"}},\"text\":\"List number 2\\n\"},{\"attributes\":{\"line\":{\"header\":0,\"identifier\":\"D4E21E4F-7ADC-434F-AEAC-715F4C260FBF\"}},\"text\":\"\\n\"},{\"attributes\":{\"inlineCode\":true,\"line\":{\"header\":0,\"identifier\":\"DBC40424-96E0-4252-8A7A-5DE8166FDA4F\"}},\"text\":\"Code span\"},{\"attributes\":{\"line\":{\"header\":0,\"identifier\":\"DBC40424-96E0-4252-8A7A-5DE8166FDA4F\"}},\"text\":\" \"},{\"attributes\":{\"line\":{\"header\":0,\"identifier\":\"DBC40424-96E0-4252-8A7A-5DE8166FDA4F\"}},\"text\":\"\\n\"},{\"text\":\"\\n\"},{\"attributes\":{\"line\":{\"codeBlock\":true,\"identifier\":\"1EEACDA8-3F92-4F01-B0AE-D3060BC77EDE\"}},\"text\":\"Code block\\n\"},{\"embeddedObjects\":[{\"identifier\":\"646FD9CE9D924262ADB1FA7AF3A2F4DB\",\"type\":\"photo\"}]},{\"text\":\"\\n\"}],\"meta\":{\"created\":{\"platform\":\"com.bloombuilt.dayone-mac\",\"version\":1552},\"small-lines-removed\":true,\"version\":1}}",
+			"isAllDay": true,
+			"duration": 0,
+			"isPinned": false,
+			"tags": ["another-dev-testing-tag", "dev-testing-tag"],
+			"creationDeviceType": "MacBook Pro",
+			"text": "# Header 1\n\n## Header 2\n\n### Header 3\n\n#### Header 4\n\n##### Header 5\n\n###### Header 6\n\n> Quote block\n\nHighlighted\n\n---\n\n**Bold**\n\n*Italic*\n\n- List item 1\n- List item 2\n\n- [ ] Check item 1\n- [ ] Check item 2\n\n1. List number 1\n2. List number 2\n\n`Code span` \n\n```\nCode block\n```\n\n\n![](dayone-moment://646FD9CE9D924262ADB1FA7AF3A2F4DB)",
+			"userActivity": {
+				"activityName": "Train"
+			},
+			"location": {
+				"region": {
+					"center": {
+						"longitude": -6.239171028137207,
+						"latitude": 53.4276123046875
+					},
+					"radius": 75
+				},
+				"localityName": "Swords",
+				"country": "Ireland",
+				"timeZoneName": "Europe/Dublin",
+				"administrativeArea": "Co. Dublin",
+				"longitude": -6.239171028137207,
+				"placeName": "Eurpocar Dublin Airport Terminal 2",
+				"latitude": 53.4276123046875
+			},
+			"creationDevice": "marcBook Pro",
+			"creationDeviceModel": "MacBookPro18,3",
+			"uuid": "DF8B32A3FE25400BBBB3A7BBFCD23CE7",
+			"starred": true,
+			"creationDate": "2024-04-16T23:00:00Z",
+			"timeZone": "Europe/Dublin"
+		},
+		{
+			"modifiedDate": "2024-04-19T21:49:53Z",
+			"isPinned": false,
+			"creationOSVersion": "14.3.1",
+			"creationDeviceType": "MacBook Pro",
+			"editingTime": 0,
+			"creationOSName": "macOS",
+			"richText": "{\"contents\":[{\"text\":\"Pariatur aute nulla incididunt. Ad dolor irure est in magna est. Ut ex Lorem reprehenderit incididunt enim eiusmod et. Aute sit duis labore quis tempor laborum eiusmod ut ad labore ad.\\n\\nPariatur aute nulla incididunt. Ad dolor irure est in magna est. Ut ex Lorem reprehenderit incididunt enim eiusmod et. Aute sit duis labore quis tempor laborum eiusmod ut ad labore ad.\"}],\"meta\":{\"created\":{\"platform\":\"com.bloombuilt.dayone-mac\",\"version\":1552},\"small-lines-removed\":true,\"version\":1}}",
+			"duration": 0,
+			"isAllDay": true,
+			"text": "Pariatur aute nulla incididunt\\. Ad dolor irure est in magna est\\. Ut ex Lorem reprehenderit incididunt enim eiusmod et\\. Aute sit duis labore quis tempor laborum eiusmod ut ad labore ad\\.\n\nPariatur aute nulla incididunt\\. Ad dolor irure est in magna est\\. Ut ex Lorem reprehenderit incididunt enim eiusmod et\\. Aute sit duis labore quis tempor laborum eiusmod ut ad labore ad\\.",
+			"uuid": "1461153D91EC48C180C606C853FBFD83",
+			"creationDeviceModel": "MacBookPro18,3",
+			"creationDevice": "marcBook Pro",
+			"timeZone": "Europe/London",
+			"starred": false,
+			"creationDate": "2024-04-17T23:00:00Z"
+		},
+		{
+			"modifiedDate": "2024-04-19T21:48:52Z",
+			"isPinned": true,
+			"creationOSVersion": "14.3.1",
+			"creationOSName": "macOS",
+			"creationDeviceType": "MacBook Pro",
+			"richText": "{\"contents\":[{\"text\":\"Dolore ex commodo aliqua irure ullamco quis aliquip. Consectetur et magna ullamco amet nisi. Ut commodo officia laborum aliquip Lorem adipisicing ipsum do amet consequat. Fugiat officia dolore aute do quis sunt exercitation. Pariatur sint exercitation ut eiusmod velit sint exercitation ullamco minim commodo qui tempor adipisicing esse amet. Lorem ad sit ullamco dolore labore commodo ea ad officia quis deserunt. Adipisicing duis qui elit ipsum aliqua ipsum ea.\"}],\"meta\":{\"created\":{\"platform\":\"com.bloombuilt.dayone-mac\",\"version\":1552},\"small-lines-removed\":true,\"version\":1}}",
+			"isAllDay": false,
+			"duration": 0,
+			"editingTime": 10.109490990638733,
+			"text": "Dolore ex commodo aliqua irure ullamco quis aliquip\\. Consectetur et magna ullamco amet nisi\\. Ut commodo officia laborum aliquip Lorem adipisicing ipsum do amet consequat\\. Fugiat officia dolore aute do quis sunt exercitation\\. Pariatur sint exercitation ut eiusmod velit sint exercitation ullamco minim commodo qui tempor adipisicing esse amet\\. Lorem ad sit ullamco dolore labore commodo ea ad officia quis deserunt\\. Adipisicing duis qui elit ipsum aliqua ipsum ea\\.",
+			"location": {
+				"region": {
+					"center": {
+						"longitude": -3.4143447875976562,
+						"latitude": 55.975017547607422
+					},
+					"radius": 75
+				},
+				"localityName": "Edinburgh",
+				"country": "United Kingdom",
+				"timeZoneName": "Europe/London",
+				"administrativeArea": "Scotland",
+				"longitude": -3.4143447875976562,
+				"placeName": "Dundas Castle",
+				"latitude": 55.975017547607422
+			},
+			"uuid": "876E72B228F847379F296B1698CA3F61",
+			"creationDeviceModel": "MacBookPro18,3",
+			"creationDevice": "marcBook Pro",
+			"starred": false,
+			"creationDate": "2024-04-19T21:48:36Z",
+			"timeZone": "Europe/London"
+		},
+		{
+			"creationDevice": "marcBook Pro",
+			"location": {
+				"region": {
+					"center": {
+						"longitude": -0.11951349675655365,
+						"latitude": 51.503360748291016
+					},
+					"radius": 75
+				},
+				"localityName": "London",
+				"country": "United Kingdom",
+				"timeZoneName": "Europe/London",
+				"administrativeArea": "England",
+				"longitude": -0.11951349675655365,
+				"placeName": "London Eye",
+				"latitude": 51.503360748291016
+			},
+			"uuid": "479270F4CAD1429AB1564DB34D0FE337",
+			"creationOSVersion": "14.3.1",
+			"photos": [
+				{
+					"fileSize": 1472349,
+					"orderInEntry": 1,
+					"creationDevice": "marcBook Pro",
+					"duration": 0,
+					"favorite": false,
+					"type": "jpeg",
+					"identifier": "031C8B7DAE0349BAA27892008778F6F6",
+					"date": "2024-03-24T18:30:30Z",
+					"exposureBiasValue": 0,
+					"height": 1559,
+					"width": 1179,
+					"md5": "6b73e9bd86a91d3a7ead09268b0fb266",
+					"isSketch": false
+				},
+				{
+					"fileSize": 1287214,
+					"orderInEntry": 0,
+					"creationDevice": "marcBook Pro",
+					"duration": 0,
+					"favorite": false,
+					"type": "jpeg",
+					"identifier": "24BD79E9E42F4A4CA0C9F384F547B5BC",
+					"date": "2024-03-24T18:28:37Z",
+					"exposureBiasValue": 0,
+					"height": 2064,
+					"width": 1179,
+					"md5": "31c871f18f68d2fde4196ccba1f8ece1",
+					"isSketch": false
+				}
+			],
+			"editingTime": 40.863040924072266,
+			"modifiedDate": "2024-04-19T21:57:00Z",
+			"starred": false,
+			"isPinned": false,
+			"creationOSName": "macOS",
+			"isAllDay": false,
+			"text": "Ipsum labore tempor eu elit voluptate incididunt sint ea enim aute do minim\\. Quis mollit ullamco nostrud dolore id id commodo veniam consequat commodo dolore ullamco tempor tempor commodo\\. Lorem tempor laboris in ipsum ea veniam laboris id sit dolor anim sit consequat nulla et\\. Nostrud est magna proident nostrud\\. Velit aliqua consectetur non ea id sit nostrud irure ut\\. Nostrud ut id consequat commodo ea labore laborum nisi in duis nisi\\. Aliquip nisi deserunt id laborum excepteur\\.\n\n![](dayone-moment://24BD79E9E42F4A4CA0C9F384F547B5BC)\n\n![](dayone-moment://031C8B7DAE0349BAA27892008778F6F6)",
+			"duration": 0,
+			"richText": "{\"contents\":[{\"text\":\"Ipsum labore tempor eu elit voluptate incididunt sint ea enim aute do minim. Quis mollit ullamco nostrud dolore id id commodo veniam consequat commodo dolore ullamco tempor tempor commodo. Lorem tempor laboris in ipsum ea veniam laboris id sit dolor anim sit consequat nulla et. Nostrud est magna proident nostrud. Velit aliqua consectetur non ea id sit nostrud irure ut. Nostrud ut id consequat commodo ea labore laborum nisi in duis nisi. Aliquip nisi deserunt id laborum excepteur.\\n\"},{\"embeddedObjects\":[{\"identifier\":\"24BD79E9E42F4A4CA0C9F384F547B5BC\",\"type\":\"photo\"}]},{\"embeddedObjects\":[{\"identifier\":\"031C8B7DAE0349BAA27892008778F6F6\",\"type\":\"photo\"}]}],\"meta\":{\"created\":{\"platform\":\"com.bloombuilt.dayone-mac\",\"version\":1552},\"small-lines-removed\":true,\"version\":1}}",
+			"creationDate": "2024-04-19T21:55:53Z",
+			"creationDeviceType": "MacBook Pro",
+			"timeZone": "Europe/London",
+			"creationDeviceModel": "MacBookPro18,3"
+		}
+	]
+}

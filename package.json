@@ -6,6 +6,8 @@
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"lint": "eslint -c .eslintrc . && prettier -c .",
+		"test": "TZ=UTC jest",
+		"test:watch": "TZ=UTC jest --watch",
 		"lint:fix": "eslint -c .eslintrc --fix . && prettier -c --write .",
 		"typecheck": "tsc -noEmit -skipLibCheck",
 		"build": "npm run typecheck && node esbuild.config.mjs production",
@@ -23,7 +25,7 @@
 		"url": "https://github.com/marcdonald/obsidian-day-one-importer.git"
 	},
 	"devDependencies": {
-		"@types/node": "^16.11.6",
+		"@types/node": "^18.19.31",
 		"eslint": "^8.57.0",
 		"@typescript-eslint/eslint-plugin": "7.7.0",
 		"@typescript-eslint/parser": "7.7.0",
@@ -31,7 +33,11 @@
 		"builtin-modules": "3.3.0",
 		"esbuild": "0.17.3",
 		"husky": "^9.0.11",
-		"obsidian": "latest",
+		"ts-jest": "^29.1.2",
+		"jest": "^29.7.0",
+		"@jest/globals": "^29.7.0",
+		"@types/jest": "^29.5.12",
+		"obsidian": "^1.5.7-1",
 		"prettier": "^3.2.5",
 		"tslib": "2.4.0",
 		"lint-staged": "^15.2.2",

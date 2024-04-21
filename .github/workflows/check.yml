@@ -17,8 +17,9 @@ jobs:
         with:
           node-version: '18.x'
 
-      - name: Build plugin
+      - name: Run checks
         run: |
           npm ci
           npm run lint
           npm run typecheck
+          npm test

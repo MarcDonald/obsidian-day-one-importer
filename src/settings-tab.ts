@@ -1,7 +1,6 @@
 import { App, moment, Notice, PluginSettingTab, Setting } from 'obsidian';
 import DayOneImporter from './main';
 import { importJson } from './import-json';
-import * as path from 'node:path';
 
 const ILLEGAL_FILENAME_CHARACTERS = ['[', ']', ':', '\\', '/', '^', '|', '#'];
 
@@ -129,10 +128,7 @@ export class SettingsTab extends PluginSettingTab {
 
 						if (res.failures.length > 0) {
 							await this.app.vault.create(
-								path.join(
-									this.plugin.settings.outDirectory,
-									'Failed Imports.md'
-								),
+								`${this.plugin.settings.outDirectory}/Failed Imports.md`,
 								res.failures
 									.map(
 										(failure) =>

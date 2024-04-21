@@ -29,3 +29,4 @@ Easily convert your Day One journals into Obsidian markdown.
 ### Not Currently Planned
 
 - Customizable metadata formats (i.e not in frontmatter)
+- Weather
