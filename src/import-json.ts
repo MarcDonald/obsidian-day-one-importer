@@ -82,18 +82,18 @@ function buildFrontmatter(item: any) {
 	let fileData = '---\n';
 	fileData += buildFrontmatterProperty(
 		'creationDate',
-		`${moment(item.creationDate).format('YYYY-MM-DD')}T${moment(item.creationDate).format('HH:MM')}`
+		`${moment(item.creationDate).format('YYYY-MM-DD')}T${moment(item.creationDate).format('HH:mm')}`
 	);
 	fileData += buildFrontmatterProperty(
 		'modifiedDate',
-		`${moment(item.modifiedDate).format('YYYY-MM-DD')}T${moment(item.modifiedDate).format('HH:MM')}`
+		`${moment(item.modifiedDate).format('YYYY-MM-DD')}T${moment(item.modifiedDate).format('HH:mm')}`
 	);
 
 	if (item.isAllDay) {
 		fileData += buildFrontmatterProperty('isAllDay', 'true');
 	}
 	if (item.isPinned) {
-		fileData += buildFrontmatterProperty('isPinned', 'true');
+		fileData += buildFrontmatterProperty('pinned', 'true');
 	}
 	if (item.starred) {
 		fileData += buildFrontmatterProperty('starred', 'true');
@@ -125,7 +125,7 @@ function buildFrontmatterProperty(
 	propertyValue: string | string[]
 ) {
 	if (Array.isArray(propertyValue)) {
-		return `${propertyName}:\n${propertyValue.map((item: string) => '  - ' + item + '\n').join('')}\n`;
+		return `${propertyName}:\n${propertyValue.map((item: string) => '  - ' + item + '\n').join('')}`;
 	}
 
 	return `${propertyName}: ${propertyValue}\n`;
