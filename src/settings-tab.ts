@@ -1,4 +1,11 @@
-import { App, moment, Notice, PluginSettingTab, Setting } from 'obsidian';
+import {
+	App,
+	moment,
+	normalizePath,
+	Notice,
+	PluginSettingTab,
+	Setting,
+} from 'obsidian';
 import DayOneImporter from './main';
 import { importJson } from './import-json';
 
@@ -18,14 +25,14 @@ export class SettingsTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Day One Files')
+			.setName('Day One files')
 			.setDesc('Location where you extracted the zip file from Day One')
 			.addText((text) =>
 				text
 					.setPlaceholder('Directory')
 					.setValue(this.plugin.settings.inDirectory)
 					.onChange(async (value) => {
-						this.plugin.settings.inDirectory = value;
+						this.plugin.settings.inDirectory = normalizePath(value);
 						await this.plugin.saveSettings();
 					})
 			)
@@ -34,20 +41,20 @@ export class SettingsTab extends PluginSettingTab {
 					.setPlaceholder('Journal JSON file')
 					.setValue(this.plugin.settings.inFileName)
 					.onChange(async (value) => {
-						this.plugin.settings.inFileName = value;
+						this.plugin.settings.inFileName = normalizePath(value);
 						await this.plugin.saveSettings();
 					})
 			);
 
 		new Setting(containerEl)
-			.setName('Out Directory')
+			.setName('Out directory')
 			.setDesc('Directory to create imported files in')
 			.addText((text) =>
 				text
 					.setPlaceholder('day-one-out')
 					.setValue(this.plugin.settings.outDirectory)
 					.onChange(async (value) => {
-						this.plugin.settings.outDirectory = value;
+						this.plugin.settings.outDirectory = normalizePath(value);
 						await this.plugin.saveSettings();
 					})
 			);
@@ -55,7 +62,7 @@ export class SettingsTab extends PluginSettingTab {
 		new Setting(containerEl).setName('File name').setHeading();
 
 		new Setting(containerEl)
-			.setName('Date-based File Names (may cause collisions)')
+			.setName('Date-based file names (may cause collisions)')
 			.setDesc(
 				"Use entry's creation date as the file name. This may cause collisions and files to be overwritten if two entries have the same creation date/time." +
 					"If this option is disabled then the entry's UUID will be used as the file name. This guarantees no collisions."
@@ -70,7 +77,7 @@ export class SettingsTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName('Date-based File Name Format')
+			.setName('Date-based file name format')
 			.addMomentFormat((timeFormat) =>
 				timeFormat
 					.setValue(this.plugin.settings.dateBasedFileNameFormat.toString())
@@ -90,7 +97,7 @@ export class SettingsTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName('Date-based File Name Format (All Day Entries)')
+			.setName('Date-based file name format (all day entries)')
 			.addMomentFormat((timeFormat) =>
 				timeFormat
 					.setValue(
@@ -112,38 +119,36 @@ export class SettingsTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl).addButton((button) =>
-			button.setButtonText('Import').onClick(() => {
-				button.setDisabled(true);
-				importJson(this.app.vault, this.plugin.settings)
-					.then(async (res) => {
+			button.setButtonText('Import').onClick(async () => {
+				try {
+					button.setDisabled(true);
+					const res = await importJson(this.app.vault, this.plugin.settings);
+					new Notice(
+						`Successful: ${res.successCount} - Failed: ${res.failures.length}`
+					);
+
+					res.failures.forEach((failure) => {
 						new Notice(
-							`Successful: ${res.successCount} - Failed: ${res.failures.length}`
+							`Entry ${failure.entry.uuid} failed to import. ${failure.reason}`
 						);
-
-						res.failures.forEach((failure) => {
-							new Notice(
-								`Entry ${failure.entry.uuid} failed to import. ${failure.reason}`
-							);
-						});
-
-						if (res.failures.length > 0) {
-							await this.app.vault.create(
-								`${this.plugin.settings.outDirectory}/Failed Imports.md`,
-								res.failures
-									.map(
-										(failure) =>
-											`- ${failure.entry.uuid} - ${moment(failure.entry.creationDate).format('YYYY-MM-DD HH:mm:ss')}\n  - ${failure.reason}`
-									)
-									.join('\n')
-							);
-						}
-					})
-					.catch((err) => {
-						new Notice(err);
-					})
-					.finally(() => {
-						button.setDisabled(false);
 					});
+
+					if (res.failures.length > 0) {
+						await this.app.vault.create(
+							`${this.plugin.settings.outDirectory}/Failed Imports.md`,
+							res.failures
+								.map(
+									(failure) =>
+										`- ${failure.entry.uuid} - ${moment(failure.entry.creationDate).format('YYYY-MM-DD HH:mm:ss')}\n  - ${failure.reason}`
+								)
+								.join('\n')
+						);
+					}
+				} catch (err) {
+					new Notice(err);
+				} finally {
+					button.setDisabled(false);
+				}
 			})
 		);
 	}

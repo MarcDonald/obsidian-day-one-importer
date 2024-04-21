@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { moment, Vault } from 'obsidian';
+import { moment, normalizePath, Vault } from 'obsidian';
 import { DayOneImporterSettings } from './main';
 
 export async function importJson(
@@ -18,7 +18,6 @@ export async function importJson(
 		const fileData = await vault.read(file);
 		const parsedFileData = JSON.parse(fileData);
 		const entries = parsedFileData.entries;
-		console.log(`Found ${entries.length} journal entries`);
 
 		let successCount = 0;
 		const failures: any[] = [];
@@ -46,7 +45,6 @@ export async function importJson(
 					ctime: new Date(item.creationDate).getTime(),
 					mtime: new Date(item.modifiedDate).getTime(),
 				});
-				console.log(`${fileName} created successfully`);
 				successCount++;
 			} catch (e) {
 				console.error(e);
@@ -71,15 +69,20 @@ export async function importJson(
 function buildFileName(settings: DayOneImporterSettings, item: any) {
 	if (settings.dateBasedFileNames) {
 		if (item.isAllDay) {
-			return `${moment(item.creationDate).format(settings.dateBasedAllDayFileNameFormat)}.md`;
+			return normalizePath(
+				`${moment(item.creationDate).format(settings.dateBasedAllDayFileNameFormat)}.md`
+			);
 		} else {
-			return `${moment(item.creationDate).format(settings.dateBasedFileNameFormat)}.md`;
+			return normalizePath(
+				`${moment(item.creationDate).format(settings.dateBasedFileNameFormat)}.md`
+			);
 		}
 	} else {
-		return `${item.uuid}.md`;
+		return normalizePath(`${item.uuid}.md`);
 	}
 }
 
+// TODO - replace with this if it works https://docs.obsidian.md/Reference/TypeScript+API/FileManager/processFrontMatter
 function buildFrontmatter(item: any) {
 	let fileData = '---\n';
 	fileData += buildFrontmatterProperty(
@@ -170,7 +173,6 @@ function buildMediaReplacement(item: any, match: RegExpMatchArray) {
 
 	if (mediaObj) {
 		const mediaFileName = `${mediaObj.md5}.${mediaObj.type}`;
-		console.log(`Replacing ${match[0]} with ![]${mediaFileName}`);
 		return {
 			replace: match[0],
 			with: `![](${mediaFileName})`,

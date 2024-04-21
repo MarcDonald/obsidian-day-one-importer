@@ -13,6 +13,9 @@ export const requestUrl: typeof obsidian.requestUrl = (req) => {
 export class PluginSettingTab implements obsidian.PluginSettingTab {}
 
 export const moment = realMoment;
+export function normalizePath(path: string) {
+	return path;
+}
 
 // From https://github.com/anpigon/obsidian-tistory-plugin/blob/main/test/mocks/obsidian.ts
 export class Plugin implements obsidian.Plugin {
@@ -23,6 +26,9 @@ export class Plugin implements obsidian.Plugin {
 		title: string,
 		callback: (evt: MouseEvent) => any
 	): HTMLElement {
+		throw new Error('Method not implemented.');
+	}
+	normalizePath(path: string): string {
 		throw new Error('Method not implemented.');
 	}
 	addStatusBarItem(): HTMLElement {
