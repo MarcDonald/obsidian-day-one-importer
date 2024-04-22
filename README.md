@@ -57,3 +57,7 @@ Easily convert your Day One journals into Obsidian markdown.
 
 - Customizable metadata formats (i.e not in frontmatter)
 - Weather
+
+## OSS
+
+- [Zod](https://zod.dev/): MIT License
