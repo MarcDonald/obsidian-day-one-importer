@@ -1,10 +1,57 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { moment, normalizePath, Vault } from 'obsidian';
+import { FileManager, moment, normalizePath, TFile, Vault } from 'obsidian';
 import { DayOneImporterSettings } from './main';
+import { z } from 'zod';
+
+const DayOneItemSchema = z.object({
+	modifiedDate: z.string().datetime(),
+	creationDate: z.string().datetime(),
+	isAllDay: z.boolean().optional(),
+	isPinned: z.boolean().optional(),
+	starred: z.boolean().optional(),
+	tags: z.array(z.string()).optional(),
+	text: z.string(),
+	userActivity: z
+		.object({
+			activityName: z.string(),
+		})
+		.optional(),
+	location: z
+		.object({
+			localityName: z.string().optional(),
+			country: z.string().optional(),
+			placeName: z.string().optional(),
+			latitude: z.number(),
+			longitude: z.number(),
+		})
+		.optional(),
+	uuid: z.string(),
+	photos: z
+		.array(
+			z.object({
+				type: z.string(),
+				identifier: z.string(),
+				md5: z.string(),
+			})
+		)
+		.optional(),
+	videos: z
+		.array(
+			z.object({
+				type: z.string(),
+				identifier: z.string(),
+				md5: z.string(),
+			})
+		)
+		.optional(),
+});
+
+type DayOneItem = z.infer<typeof DayOneItemSchema>;
 
 export async function importJson(
 	vault: Vault,
-	settings: DayOneImporterSettings
+	settings: DayOneImporterSettings,
+	fileManager: FileManager
 ) {
 	try {
 		const file = vault.getFileByPath(
@@ -17,14 +64,14 @@ export async function importJson(
 
 		const fileData = await vault.read(file);
 		const parsedFileData = JSON.parse(fileData);
-		const entries = parsedFileData.entries;
+		const entries = z.array(DayOneItemSchema).parse(parsedFileData.entries);
 
 		let successCount = 0;
-		const failures: any[] = [];
+		const failures: { entry: DayOneItem; reason: string }[] = [];
 
 		const fileNames = new Set();
 
-		entries.forEach((item: any) => {
+		for (const item of entries) {
 			try {
 				const fileName = buildFileName(settings, item);
 
@@ -34,17 +81,18 @@ export async function importJson(
 					fileNames.add(fileName);
 				}
 
-				let fileData = '';
+				const file = await vault.create(
+					`${settings.outDirectory}/${fileName}`,
+					// Day One seems to export escaped full stops for some reason, so replace those with just a regular full stop
+					buildFileBody(item),
+					{
+						ctime: new Date(item.creationDate).getTime(),
+						mtime: new Date(item.modifiedDate).getTime(),
+					}
+				);
 
-				fileData += buildFrontmatter(item);
+				await addFrontMatter(file, item, fileManager);
 
-				// Day One seems to export escaped full stops for some reason, so replace those with just a regular full stop
-				fileData += buildFileBody(item);
-
-				vault.create(`${settings.outDirectory}/${fileName}`, fileData, {
-					ctime: new Date(item.creationDate).getTime(),
-					mtime: new Date(item.modifiedDate).getTime(),
-				});
 				successCount++;
 			} catch (e) {
 				console.error(e);
@@ -53,7 +101,7 @@ export async function importJson(
 					reason: e.message,
 				});
 			}
-		});
+		}
 
 		return {
 			total: entries.length,
@@ -66,7 +114,7 @@ export async function importJson(
 	}
 }
 
-function buildFileName(settings: DayOneImporterSettings, item: any) {
+function buildFileName(settings: DayOneImporterSettings, item: DayOneItem) {
 	if (settings.dateBasedFileNames) {
 		if (item.isAllDay) {
 			return normalizePath(
@@ -82,61 +130,7 @@ function buildFileName(settings: DayOneImporterSettings, item: any) {
 	}
 }
 
-// TODO - replace with this if it works https://docs.obsidian.md/Reference/TypeScript+API/FileManager/processFrontMatter
-function buildFrontmatter(item: any) {
-	let fileData = '---\n';
-	fileData += buildFrontmatterProperty(
-		'creationDate',
-		`${moment(item.creationDate).format('YYYY-MM-DD')}T${moment(item.creationDate).format('HH:mm')}`
-	);
-	fileData += buildFrontmatterProperty(
-		'modifiedDate',
-		`${moment(item.modifiedDate).format('YYYY-MM-DD')}T${moment(item.modifiedDate).format('HH:mm')}`
-	);
-
-	if (item.isAllDay) {
-		fileData += buildFrontmatterProperty('isAllDay', 'true');
-	}
-	if (item.isPinned) {
-		fileData += buildFrontmatterProperty('pinned', 'true');
-	}
-	if (item.starred) {
-		fileData += buildFrontmatterProperty('starred', 'true');
-	}
-
-	if (item.tags) {
-		fileData += buildFrontmatterProperty('tags', item.tags);
-	}
-
-	if (item.userActivity) {
-		fileData += buildFrontmatterProperty(
-			'activity',
-			item.userActivity.activityName
-		);
-	}
-	if (item.location) {
-		fileData += buildFrontmatterProperty(
-			'location',
-			`${item.location.placeName}, ${item.location.localityName}, ${item.location.country}`
-		);
-	}
-
-	fileData += `---\n`;
-	return fileData;
-}
-
-function buildFrontmatterProperty(
-	propertyName: string,
-	propertyValue: string | string[]
-) {
-	if (Array.isArray(propertyValue)) {
-		return `${propertyName}:\n${propertyValue.map((item: string) => '  - ' + item + '\n').join('')}`;
-	}
-
-	return `${propertyName}: ${propertyValue}\n`;
-}
-
-function buildFileBody(item: any): string {
+function buildFileBody(item: DayOneItem): string {
 	if (typeof item.text !== 'string') {
 		throw new Error('item.text is not a string');
 	}
@@ -164,7 +158,7 @@ function buildFileBody(item: any): string {
 	return returned;
 }
 
-function buildMediaReplacement(item: any, match: RegExpMatchArray) {
+function buildMediaReplacement(item: DayOneItem, match: RegExpMatchArray) {
 	let mediaObj = item.photos?.find((p: any) => p.identifier === match[1]);
 
 	if (!mediaObj) {
@@ -186,4 +180,45 @@ function buildMediaReplacement(item: any, match: RegExpMatchArray) {
 		replace: match[0],
 		with: match[0],
 	};
+}
+
+async function addFrontMatter(
+	file: TFile,
+	item: DayOneItem,
+	fileManager: FileManager
+) {
+	await fileManager.processFrontMatter(file, (frontMatter) => {
+		frontMatter['creationDate'] =
+			`${moment(item.creationDate).format('YYYY-MM-DD')}T${moment(item.creationDate).format('HH:mm')}`;
+		frontMatter['modifiedDate'] =
+			`${moment(item.modifiedDate).format('YYYY-MM-DD')}T${moment(item.modifiedDate).format('HH:mm')}`;
+		if (item.isAllDay) {
+			frontMatter['isAllDay'] = true;
+		}
+		if (item.isPinned) {
+			frontMatter['pinned'] = true;
+		}
+		if (item.starred) {
+			frontMatter['starred'] = true;
+		}
+		if (item.tags?.length ?? 0 > 0) {
+			frontMatter['tags'] = item.tags;
+		}
+		if (item.userActivity?.activityName) {
+			frontMatter['activity'] = item.userActivity.activityName;
+		}
+		if (item.location) {
+			if (
+				item.location?.placeName &&
+				item.location?.localityName &&
+				item.location?.country
+			) {
+				frontMatter['location'] =
+					`${item.location.placeName}, ${item.location.localityName}, ${item.location.country}`;
+			} else {
+				frontMatter['location'] =
+					`${item.location.latitude}, ${item.location.longitude}`;
+			}
+		}
+	});
 }

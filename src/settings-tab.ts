@@ -122,7 +122,11 @@ export class SettingsTab extends PluginSettingTab {
 			button.setButtonText('Import').onClick(async () => {
 				try {
 					button.setDisabled(true);
-					const res = await importJson(this.app.vault, this.plugin.settings);
+					const res = await importJson(
+						this.app.vault,
+						this.plugin.settings,
+						this.app.fileManager
+					);
 					new Notice(
 						`Successful: ${res.successCount} - Failed: ${res.failures.length}`
 					);
