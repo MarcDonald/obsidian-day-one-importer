@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { importJson } from '../src/import-json';
 import { DEFAULT_SETTINGS } from '../src/main';
 import { FileManager, TFile, Vault } from 'obsidian';
@@ -34,6 +35,7 @@ const mockEntry = {
 describe('importJson', () => {
 	let vault: jest.Mocked<Vault>;
 	let fileManager: jest.Mocked<FileManager>;
+	let frontmatterObjs: any[] = [];
 
 	beforeEach(() => {
 		vault = {
@@ -42,12 +44,18 @@ describe('importJson', () => {
 			create: jest.fn(),
 		} as unknown as jest.Mocked<Vault>;
 		fileManager = {
-			processFrontMatter: jest.fn(),
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			processFrontMatter: (file: any, cb: any) => {
+				const frontMatter = {};
+				cb(frontMatter);
+				frontmatterObjs.push(frontMatter);
+			},
 		} as unknown as jest.Mocked<FileManager>;
 	});
 
 	afterEach(() => {
 		jest.clearAllMocks();
+		frontmatterObjs = [];
 	});
 
 	test('should error if no input file', () => {
@@ -299,6 +307,15 @@ describe('importJson', () => {
 			ctime: 1713308400000,
 			mtime: 1713563751000,
 		});
+		expect(frontmatterObjs[0]).toEqual({
+			activity: 'Train',
+			creationDate: '2024-04-16T23:00',
+			isAllDay: true,
+			location: 'Eurpocar Dublin Airport Terminal 2, Swords, Ireland',
+			modifiedDate: '2024-04-19T21:55',
+			starred: true,
+			tags: ['another-dev-testing-tag', 'dev-testing-tag'],
+		});
 
 		// entry 2
 		expect(vault.create.mock.calls[1][0]).toBe(
@@ -312,6 +329,11 @@ describe('importJson', () => {
 			ctime: 1713394800000,
 			mtime: 1713563393000,
 		});
+		expect(frontmatterObjs[1]).toEqual({
+			creationDate: '2024-04-17T23:00',
+			isAllDay: true,
+			modifiedDate: '2024-04-19T21:49',
+		});
 
 		// entry 3
 		expect(vault.create.mock.calls[2][0]).toBe(
@@ -323,6 +345,12 @@ describe('importJson', () => {
 		expect(vault.create.mock.calls[2][2]).toEqual({
 			ctime: 1713563316000,
 			mtime: 1713563332000,
+		});
+		expect(frontmatterObjs[2]).toEqual({
+			creationDate: '2024-04-19T21:48',
+			location: 'Dundas Castle, Edinburgh, United Kingdom',
+			modifiedDate: '2024-04-19T21:48',
+			pinned: true,
 		});
 
 		// entry 4
@@ -337,7 +365,10 @@ describe('importJson', () => {
 			ctime: 1713563753000,
 			mtime: 1713563820000,
 		});
+		expect(frontmatterObjs[3]).toEqual({
+			creationDate: '2024-04-19T21:55',
+			location: 'London Eye, London, United Kingdom',
+			modifiedDate: '2024-04-19T21:57',
+		});
 	});
-
-	// TODO: Frontmatter testing
 });
