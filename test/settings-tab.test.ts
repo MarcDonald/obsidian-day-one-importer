@@ -1,9 +1,9 @@
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, test } from '@jest/globals';
 
 // TODO
 
 describe('settings-tab', () => {
-	it('TODO ', async () => {
+	test('TODO ', async () => {
 		expect(true).toBeTruthy();
 	});
 });

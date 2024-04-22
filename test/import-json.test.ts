@@ -6,8 +6,8 @@ import {
 	beforeEach,
 	describe,
 	expect,
-	it,
 	jest,
+	test,
 } from '@jest/globals';
 import * as testData from './__test_data__/day-one-in/Dev Journal.json';
 
@@ -50,7 +50,7 @@ describe('importJson', () => {
 		jest.clearAllMocks();
 	});
 
-	it('should error if no input file', () => {
+	test('should error if no input file', () => {
 		vault.getFileByPath.mockReturnValue(null);
 
 		expect(() =>
@@ -67,7 +67,7 @@ describe('importJson', () => {
 		expect(vault.getFileByPath).toBeCalledWith('testDir/testInput.json');
 	});
 
-	it('should error if file name has already been used', async () => {
+	test('should error if file name has already been used', async () => {
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(
 			JSON.stringify({
@@ -92,7 +92,7 @@ describe('importJson', () => {
 		);
 	});
 
-	it('should use provided date format to name files when date-based naming is enabled', async () => {
+	test('should use provided date format to name files when date-based naming is enabled', async () => {
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(
 			JSON.stringify({
@@ -129,7 +129,7 @@ describe('importJson', () => {
 		);
 	});
 
-	it('should use UUID as file name when date-based naming is not enabled', async () => {
+	test('should use UUID as file name when date-based naming is not enabled', async () => {
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(
 			JSON.stringify({
@@ -162,7 +162,7 @@ describe('importJson', () => {
 		expect(vault.create.mock.calls[1][0]).toBe('day-one-out/def456.md');
 	});
 
-	it('should replace images or videos', async () => {
+	test('should replace images or videos', async () => {
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(
 			JSON.stringify({
@@ -236,7 +236,7 @@ describe('importJson', () => {
 		});
 	});
 
-	it('should not replace images or videos that are not found', async () => {
+	test('should not replace images or videos that are not found', async () => {
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(
 			JSON.stringify({
@@ -263,7 +263,7 @@ describe('importJson', () => {
 		});
 	});
 
-	it('full import', async () => {
+	test('full import', async () => {
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(JSON.stringify(testData));
 
@@ -338,4 +338,6 @@ describe('importJson', () => {
 			mtime: 1713563820000,
 		});
 	});
+
+	// TODO: Frontmatter testing
 });
