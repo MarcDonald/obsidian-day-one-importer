@@ -165,7 +165,7 @@ export class SettingsTab extends PluginSettingTab {
 
 						if (res.failures.length > 0) {
 							await this.app.vault.create(
-								`${this.plugin.settings.outDirectory}/Failed Imports.md`,
+								`${this.plugin.settings.outDirectory}/Failed Imports ${moment().toDate().getTime()}.md`,
 								res.failures
 									.map(
 										(failure) =>
