@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { importJson } from '../src/import-json';
 import { DEFAULT_SETTINGS } from '../src/main';
-import { FileManager, TFile, Vault } from 'obsidian';
+import { Events, FileManager, TFile, Vault } from 'obsidian';
 import {
 	afterEach,
 	beforeEach,
@@ -35,6 +35,7 @@ const mockEntry = {
 describe('importJson', () => {
 	let vault: jest.Mocked<Vault>;
 	let fileManager: jest.Mocked<FileManager>;
+	let importEvents: jest.Mocked<Events>;
 	let frontmatterObjs: any[] = [];
 
 	beforeEach(() => {
@@ -51,6 +52,9 @@ describe('importJson', () => {
 				frontmatterObjs.push(frontMatter);
 			},
 		} as unknown as jest.Mocked<FileManager>;
+		importEvents = {
+			trigger: jest.fn(),
+		} as unknown as jest.Mocked<Events>;
 	});
 
 	afterEach(() => {
@@ -69,7 +73,8 @@ describe('importJson', () => {
 					inDirectory: 'testDir',
 					inFileName: 'testInput.json',
 				},
-				fileManager
+				fileManager,
+				importEvents
 			)
 		).rejects.toThrowError('No file found');
 		expect(vault.getFileByPath).toBeCalledWith('testDir/testInput.json');
@@ -92,7 +97,12 @@ describe('importJson', () => {
 			})
 		);
 
-		const res = await importJson(vault, DEFAULT_SETTINGS, fileManager);
+		const res = await importJson(
+			vault,
+			DEFAULT_SETTINGS,
+			fileManager,
+			importEvents
+		);
 		expect(res.failures).toHaveLength(1);
 		expect(res.failures[0].entry.uuid).toBe('abc123');
 		expect(res.failures[0].reason).toBe(
@@ -126,7 +136,8 @@ describe('importJson', () => {
 				dateBasedFileNameFormat: 'YYYYMMDDHHmmssS',
 				dateBasedAllDayFileNameFormat: 'SssmmHHDDMMYYYY',
 			},
-			fileManager
+			fileManager,
+			importEvents
 		);
 
 		expect(vault.create.mock.calls[0][0]).toBe(
@@ -163,7 +174,8 @@ describe('importJson', () => {
 				...DEFAULT_SETTINGS,
 				dateBasedFileNames: false,
 			},
-			fileManager
+			fileManager,
+			importEvents
 		);
 
 		expect(vault.create.mock.calls[0][0]).toBe('day-one-out/abc123.md');
@@ -232,7 +244,7 @@ describe('importJson', () => {
 			})
 		);
 
-		await importJson(vault, DEFAULT_SETTINGS, fileManager);
+		await importJson(vault, DEFAULT_SETTINGS, fileManager, importEvents);
 
 		expect(vault.create.mock.calls[0][1]).toBe(
 			'![](d500d6789ff2c211af3f507b17be8e66.mp4)\n' +
@@ -259,7 +271,7 @@ describe('importJson', () => {
 			})
 		);
 
-		await importJson(vault, DEFAULT_SETTINGS, fileManager);
+		await importJson(vault, DEFAULT_SETTINGS, fileManager, importEvents);
 
 		expect(vault.create.mock.calls[0][1]).toBe(
 			'![](dayone-moment:/video/6F9B2DC7EADE4242A80DC76470D2264E)\n' +
@@ -275,7 +287,7 @@ describe('importJson', () => {
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(JSON.stringify(testData));
 
-		await importJson(vault, DEFAULT_SETTINGS, fileManager);
+		await importJson(vault, DEFAULT_SETTINGS, fileManager, importEvents);
 
 		// entry 1
 		expect(vault.create.mock.calls[0][0]).toBe(
@@ -370,5 +382,31 @@ describe('importJson', () => {
 			location: 'London Eye, London, United Kingdom',
 			modifiedDate: '2024-04-19T21:57',
 		});
+
+		expect(importEvents.trigger).toHaveBeenNthCalledWith(
+			1,
+			'percentage-update',
+			20
+		);
+		expect(importEvents.trigger).toHaveBeenNthCalledWith(
+			2,
+			'percentage-update',
+			40
+		);
+		expect(importEvents.trigger).toHaveBeenNthCalledWith(
+			3,
+			'percentage-update',
+			60
+		);
+		expect(importEvents.trigger).toHaveBeenNthCalledWith(
+			4,
+			'percentage-update',
+			80
+		);
+		expect(importEvents.trigger).toHaveBeenNthCalledWith(
+			5,
+			'percentage-update',
+			100
+		);
 	});
 });

@@ -118,43 +118,54 @@ export class SettingsTab extends PluginSettingTab {
 					})
 			);
 
-		new Setting(containerEl).addButton((button) =>
-			button.setButtonText('Import').onClick(async () => {
-				try {
-					button.setDisabled(true);
-					const res = await importJson(
-						this.app.vault,
-						this.plugin.settings,
-						this.app.fileManager
-					);
-					new Notice(
-						`Successful: ${res.successCount} - Failed: ${res.failures.length}`
-					);
-
-					res.failures.forEach((failure) => {
-						new Notice(
-							`Entry ${failure.entry.uuid} failed to import. ${failure.reason}`
-						);
-					});
-
-					if (res.failures.length > 0) {
-						await this.app.vault.create(
-							`${this.plugin.settings.outDirectory}/Failed Imports.md`,
-							res.failures
-								.map(
-									(failure) =>
-										`- ${failure.entry.uuid} - ${moment(failure.entry.creationDate).format('YYYY-MM-DD HH:mm:ss')}\n  - ${failure.reason}`
-								)
-								.join('\n')
-						);
+		new Setting(containerEl)
+			.addProgressBar((pb) => {
+				pb.setValue(0);
+				this.plugin.percentageUpdateRef = this.plugin.importEvents.on(
+					'percentage-update',
+					(newPercentage: number) => {
+						pb.setValue(newPercentage);
 					}
-				} catch (err) {
-					new Notice(err);
-				} finally {
-					button.setDisabled(false);
-				}
+				);
 			})
-		);
+			.addButton((button) =>
+				button.setButtonText('Import').onClick(async () => {
+					try {
+						button.setDisabled(true);
+						const res = await importJson(
+							this.app.vault,
+							this.plugin.settings,
+							this.app.fileManager,
+							this.plugin.importEvents
+						);
+						new Notice(
+							`Successful: ${res.successCount} - Failed: ${res.failures.length}`
+						);
+
+						res.failures.forEach((failure) => {
+							new Notice(
+								`Entry ${failure.entry.uuid} failed to import. ${failure.reason}`
+							);
+						});
+
+						if (res.failures.length > 0) {
+							await this.app.vault.create(
+								`${this.plugin.settings.outDirectory}/Failed Imports.md`,
+								res.failures
+									.map(
+										(failure) =>
+											`- ${failure.entry.uuid} - ${moment(failure.entry.creationDate).format('YYYY-MM-DD HH:mm:ss')}\n  - ${failure.reason}`
+									)
+									.join('\n')
+							);
+						}
+					} catch (err) {
+						new Notice(err);
+					} finally {
+						button.setDisabled(false);
+					}
+				})
+			);
 	}
 }
 

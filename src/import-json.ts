@@ -1,5 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FileManager, moment, normalizePath, TFile, Vault } from 'obsidian';
+import {
+	Events,
+	FileManager,
+	moment,
+	normalizePath,
+	TFile,
+	Vault,
+} from 'obsidian';
 import { DayOneImporterSettings } from './main';
 import { z } from 'zod';
 
@@ -10,7 +17,7 @@ const DayOneItemSchema = z.object({
 	isPinned: z.boolean().optional(),
 	starred: z.boolean().optional(),
 	tags: z.array(z.string()).optional(),
-	text: z.string(),
+	text: z.string().default(''),
 	userActivity: z
 		.object({
 			activityName: z.string(),
@@ -51,7 +58,8 @@ type DayOneItem = z.infer<typeof DayOneItemSchema>;
 export async function importJson(
 	vault: Vault,
 	settings: DayOneImporterSettings,
-	fileManager: FileManager
+	fileManager: FileManager,
+	importEvents: Events
 ) {
 	try {
 		const file = vault.getFileByPath(
@@ -71,7 +79,8 @@ export async function importJson(
 
 		const fileNames = new Set();
 
-		for (const item of entries) {
+		let percentage = 0;
+		for (const [index, item] of entries.entries()) {
 			try {
 				const fileName = buildFileName(settings, item);
 
@@ -101,6 +110,10 @@ export async function importJson(
 					reason: e.message,
 				});
 			}
+
+			const entryNumber = index + 1;
+			percentage = (entryNumber / entries.length) * 100;
+			importEvents.trigger('percentage-update', percentage);
 		}
 
 		return {
@@ -131,10 +144,6 @@ function buildFileName(settings: DayOneImporterSettings, item: DayOneItem) {
 }
 
 function buildFileBody(item: DayOneItem): string {
-	if (typeof item.text !== 'string') {
-		throw new Error('item.text is not a string');
-	}
-
 	let returned = `${(item.text as string).replace(/\\./gm, '.')}`;
 
 	const photoMoments = Array.from(
