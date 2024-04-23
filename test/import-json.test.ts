@@ -80,7 +80,7 @@ describe('importJson', () => {
 		expect(vault.getFileByPath).toBeCalledWith('testDir/testInput.json');
 	});
 
-	test('should error if file name has already been used', async () => {
+	test('should error if file name has already been used in this import', async () => {
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(
 			JSON.stringify({
@@ -106,8 +106,64 @@ describe('importJson', () => {
 		expect(res.failures).toHaveLength(1);
 		expect(res.failures[0].entry.uuid).toBe('abc123');
 		expect(res.failures[0].reason).toBe(
-			'A file named abc123.md already exists'
+			'A file named abc123.md has already been created in this import'
 		);
+	});
+
+	test('should ignore if file already exists and settings.ignoreExistingFiles is true', async () => {
+		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
+		vault.read.mockResolvedValue(
+			JSON.stringify({
+				entries: [
+					{
+						...mockEntry,
+						uuid: 'abc123',
+					},
+				],
+			})
+		);
+		vault.create.mockRejectedValue(new Error('File already exists.'));
+
+		const res = await importJson(
+			vault,
+			{
+				...DEFAULT_SETTINGS,
+				ignoreExistingFiles: true,
+			},
+			fileManager,
+			importEvents
+		);
+		expect(res.successCount).toBe(0);
+		expect(res.failures).toHaveLength(0);
+		expect(res.ignoreCount).toBe(1);
+	});
+
+	test('should error if file already exists and settings.ignoreExistingFiles is false', async () => {
+		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
+		vault.read.mockResolvedValue(
+			JSON.stringify({
+				entries: [
+					{
+						...mockEntry,
+						uuid: 'abc123',
+					},
+				],
+			})
+		);
+		vault.create.mockRejectedValue(new Error('File already exists.'));
+
+		const res = await importJson(
+			vault,
+			{
+				...DEFAULT_SETTINGS,
+				ignoreExistingFiles: false,
+			},
+			fileManager,
+			importEvents
+		);
+		expect(res.successCount).toBe(0);
+		expect(res.failures).toHaveLength(1);
+		expect(res.ignoreCount).toBe(0);
 	});
 
 	test('should use provided date format to name files when date-based naming is enabled', async () => {

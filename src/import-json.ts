@@ -75,6 +75,7 @@ export async function importJson(
 		const entries = z.array(DayOneItemSchema).parse(parsedFileData.entries);
 
 		let successCount = 0;
+		let ignoreCount = 0;
 		const failures: { entry: DayOneItem; reason: string }[] = [];
 
 		const fileNames = new Set();
@@ -85,7 +86,9 @@ export async function importJson(
 				const fileName = buildFileName(settings, item);
 
 				if (fileNames.has(fileName)) {
-					throw new Error(`A file named ${fileName} already exists`);
+					throw new Error(
+						`A file named ${fileName} has already been created in this import`
+					);
 				} else {
 					fileNames.add(fileName);
 				}
@@ -104,11 +107,18 @@ export async function importJson(
 
 				successCount++;
 			} catch (e) {
-				console.error(e);
-				failures.push({
-					entry: item,
-					reason: e.message,
-				});
+				if (
+					e.message === 'File already exists.' &&
+					settings.ignoreExistingFiles
+				) {
+					ignoreCount++;
+				} else {
+					console.error(e);
+					failures.push({
+						entry: item,
+						reason: e.message,
+					});
+				}
 			}
 
 			const entryNumber = index + 1;
@@ -118,7 +128,8 @@ export async function importJson(
 
 		return {
 			total: entries.length,
-			successCount: successCount,
+			successCount,
+			ignoreCount,
 			failures,
 		};
 	} catch (err) {

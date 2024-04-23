@@ -58,6 +58,19 @@ export class SettingsTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+		new Setting(containerEl)
+			.setName('Ignore existing files')
+			.setDesc(
+				'If disabled then conflicting file names will be logged as failures, otherwise they will be ignored'
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.ignoreExistingFiles)
+					.onChange(async (value) => {
+						this.plugin.settings.ignoreExistingFiles = value;
+						await this.plugin.saveSettings();
+					})
+			);
 
 		new Setting(containerEl).setName('File name').setHeading();
 
@@ -89,7 +102,8 @@ export class SettingsTab extends PluginSettingTab {
 									`File name cannot contain any of the following characters: ${ILLEGAL_FILENAME_CHARACTERS.join('')}`
 								);
 							} else {
-								this.plugin.settings.dateBasedFileNameFormat = value;
+								this.plugin.settings.dateBasedFileNameFormat =
+									normalizePath(value);
 								await this.plugin.saveSettings();
 							}
 						}
@@ -111,7 +125,8 @@ export class SettingsTab extends PluginSettingTab {
 									`File name cannot contain any of the following characters: ${ILLEGAL_FILENAME_CHARACTERS.join('')}`
 								);
 							} else {
-								this.plugin.settings.dateBasedAllDayFileNameFormat = value;
+								this.plugin.settings.dateBasedAllDayFileNameFormat =
+									normalizePath(value);
 								await this.plugin.saveSettings();
 							}
 						}
@@ -139,7 +154,7 @@ export class SettingsTab extends PluginSettingTab {
 							this.plugin.importEvents
 						);
 						new Notice(
-							`Successful: ${res.successCount} - Failed: ${res.failures.length}`
+							`Successful: ${res.successCount} - Failed: ${res.failures.length} - Ignored: ${res.ignoreCount}`
 						);
 
 						res.failures.forEach((failure) => {
