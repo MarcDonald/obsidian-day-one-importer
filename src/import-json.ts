@@ -212,6 +212,7 @@ async function addFrontMatter(
 			`${moment(item.creationDate).format('YYYY-MM-DD')}T${moment(item.creationDate).format('HH:mm')}`;
 		frontMatter['modifiedDate'] =
 			`${moment(item.modifiedDate).format('YYYY-MM-DD')}T${moment(item.modifiedDate).format('HH:mm')}`;
+		frontMatter['uuid'] = item.uuid;
 		if (item.isAllDay) {
 			frontMatter['isAllDay'] = true;
 		}

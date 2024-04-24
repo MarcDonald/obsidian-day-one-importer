@@ -378,6 +378,7 @@ describe('importJson', () => {
 		expect(frontmatterObjs[0]).toEqual({
 			activity: 'Train',
 			creationDate: '2024-04-16T23:00',
+			uuid: 'DF8B32A3FE25400BBBB3A7BBFCD23CE7',
 			isAllDay: true,
 			location: 'Eurpocar Dublin Airport Terminal 2, Swords, Ireland',
 			modifiedDate: '2024-04-19T21:55',
@@ -401,6 +402,7 @@ describe('importJson', () => {
 			creationDate: '2024-04-17T23:00',
 			isAllDay: true,
 			modifiedDate: '2024-04-19T21:49',
+			uuid: '1461153D91EC48C180C606C853FBFD83',
 		});
 
 		// entry 3
@@ -419,6 +421,7 @@ describe('importJson', () => {
 			location: 'Dundas Castle, Edinburgh, United Kingdom',
 			modifiedDate: '2024-04-19T21:48',
 			pinned: true,
+			uuid: '876E72B228F847379F296B1698CA3F61',
 		});
 
 		// entry 4
@@ -437,6 +440,7 @@ describe('importJson', () => {
 			creationDate: '2024-04-19T21:55',
 			location: 'London Eye, London, United Kingdom',
 			modifiedDate: '2024-04-19T21:57',
+			uuid: '479270F4CAD1429AB1564DB34D0FE337',
 		});
 
 		expect(importEvents.trigger).toHaveBeenNthCalledWith(
