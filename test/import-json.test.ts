@@ -410,7 +410,10 @@ describe('importJson', () => {
 			'day-one-out/876E72B228F847379F296B1698CA3F61.md'
 		);
 		expect(vault.create.mock.calls[2][1]).toBe(
-			'Dolore ex commodo aliqua irure ullamco quis aliquip. Consectetur et magna ullamco amet nisi. Ut commodo officia laborum aliquip Lorem adipisicing ipsum do amet consequat. Fugiat officia dolore aute do quis sunt exercitation. Pariatur sint exercitation ut eiusmod velit sint exercitation ullamco minim commodo qui tempor adipisicing esse amet. Lorem ad sit ullamco dolore labore commodo ea ad officia quis deserunt. Adipisicing duis qui elit ipsum aliqua ipsum ea.'
+			'"This text is in quotes"\n' +
+				'This-text-is-hyphenated\n' +
+				'(This text is in parentheses)\n\n' +
+				'Dolore ex commodo aliqua irure ullamco quis aliquip. Consectetur et magna ullamco amet nisi. Ut commodo officia laborum aliquip Lorem adipisicing ipsum do amet consequat. Fugiat officia dolore aute do quis sunt exercitation. Pariatur sint exercitation ut eiusmod velit sint exercitation ullamco minim commodo qui tempor adipisicing esse amet. Lorem ad sit ullamco dolore labore commodo ea ad officia quis deserunt. Adipisicing duis qui elit ipsum aliqua ipsum ea.'
 		);
 		expect(vault.create.mock.calls[2][2]).toEqual({
 			ctime: 1713563316000,
