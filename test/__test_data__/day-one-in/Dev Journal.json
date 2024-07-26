@@ -82,11 +82,11 @@
 			"creationOSVersion": "14.3.1",
 			"creationOSName": "macOS",
 			"creationDeviceType": "MacBook Pro",
-			"richText": "{\"contents\":[{\"text\":\"Dolore ex commodo aliqua irure ullamco quis aliquip. Consectetur et magna ullamco amet nisi. Ut commodo officia laborum aliquip Lorem adipisicing ipsum do amet consequat. Fugiat officia dolore aute do quis sunt exercitation. Pariatur sint exercitation ut eiusmod velit sint exercitation ullamco minim commodo qui tempor adipisicing esse amet. Lorem ad sit ullamco dolore labore commodo ea ad officia quis deserunt. Adipisicing duis qui elit ipsum aliqua ipsum ea.\"}],\"meta\":{\"created\":{\"platform\":\"com.bloombuilt.dayone-mac\",\"version\":1552},\"small-lines-removed\":true,\"version\":1}}",
+			"richText": "{\"contents\":[{\"text\":\"\\\"This text is in quotes\\\"\\nThis-text-is-hyphenated\\n(This text is in parentheses)\\n\\nDolore ex commodo aliqua irure ullamco quis aliquip. Consectetur et magna ullamco amet nisi. Ut commodo officia laborum aliquip Lorem adipisicing ipsum do amet consequat. Fugiat officia dolore aute do quis sunt exercitation. Pariatur sint exercitation ut eiusmod velit sint exercitation ullamco minim commodo qui tempor adipisicing esse amet. Lorem ad sit ullamco dolore labore commodo ea ad officia quis deserunt. Adipisicing duis qui elit ipsum aliqua ipsum ea.\"}],\"meta\":{\"created\":{\"platform\":\"com.bloombuilt.dayone-mac\",\"version\":1570},\"small-lines-removed\":true,\"version\":1}}",
 			"isAllDay": false,
 			"duration": 0,
 			"editingTime": 10.109490990638733,
-			"text": "Dolore ex commodo aliqua irure ullamco quis aliquip\\. Consectetur et magna ullamco amet nisi\\. Ut commodo officia laborum aliquip Lorem adipisicing ipsum do amet consequat\\. Fugiat officia dolore aute do quis sunt exercitation\\. Pariatur sint exercitation ut eiusmod velit sint exercitation ullamco minim commodo qui tempor adipisicing esse amet\\. Lorem ad sit ullamco dolore labore commodo ea ad officia quis deserunt\\. Adipisicing duis qui elit ipsum aliqua ipsum ea\\.",
+			"text": "\"This text is in quotes\"\nThis\\-text\\-is\\-hyphenated\n\\(This text is in parentheses\\)\n\nDolore ex commodo aliqua irure ullamco quis aliquip\\. Consectetur et magna ullamco amet nisi\\. Ut commodo officia laborum aliquip Lorem adipisicing ipsum do amet consequat\\. Fugiat officia dolore aute do quis sunt exercitation\\. Pariatur sint exercitation ut eiusmod velit sint exercitation ullamco minim commodo qui tempor adipisicing esse amet\\. Lorem ad sit ullamco dolore labore commodo ea ad officia quis deserunt\\. Adipisicing duis qui elit ipsum aliqua ipsum ea\\.",
 			"location": {
 				"region": {
 					"center": {

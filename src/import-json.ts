@@ -155,7 +155,7 @@ function buildFileName(settings: DayOneImporterSettings, item: DayOneItem) {
 }
 
 function buildFileBody(item: DayOneItem): string {
-	let returned = `${(item.text as string).replace(/\\./gm, '.')}`;
+	let returned = `${(item.text as string).replace(/\\/gm, '')}`;
 
 	const photoMoments = Array.from(
 		returned.matchAll(/!\[]\(dayone-moment:\/\/([^)]+)\)/g)
