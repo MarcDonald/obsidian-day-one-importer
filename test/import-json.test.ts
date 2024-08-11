@@ -204,6 +204,25 @@ describe('importJson', () => {
 		);
 	});
 
+	test('should gracefully handle empty userActivity object', async () => {
+		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
+		vault.read.mockResolvedValue(
+			JSON.stringify({
+				entries: [
+					{
+						...mockEntry,
+						userActivity: {},
+					},
+				],
+			})
+		);
+
+		await importJson(vault, DEFAULT_SETTINGS, fileManager, importEvents);
+
+		// Testing that it does not fail schema validation
+		expect(vault.create.mock.calls[0][1]).toBe('testing 123');
+	});
+
 	test('should use UUID as file name when date-based naming is not enabled', async () => {
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(
@@ -345,7 +364,7 @@ describe('importJson', () => {
 
 		await importJson(vault, DEFAULT_SETTINGS, fileManager, importEvents);
 
-		// entry 1
+		// entry 1 - Markdown
 		expect(vault.create.mock.calls[0][0]).toBe(
 			'day-one-out/DF8B32A3FE25400BBBB3A7BBFCD23CE7.md'
 		);
@@ -386,7 +405,7 @@ describe('importJson', () => {
 			tags: ['another-dev-testing-tag', 'dev-testing-tag'],
 		});
 
-		// entry 2
+		// entry 2 - Multiple paragraphs
 		expect(vault.create.mock.calls[1][0]).toBe(
 			'day-one-out/1461153D91EC48C180C606C853FBFD83.md'
 		);
@@ -405,7 +424,7 @@ describe('importJson', () => {
 			uuid: '1461153D91EC48C180C606C853FBFD83',
 		});
 
-		// entry 3
+		// entry 3 - Hyphens and parentheses
 		expect(vault.create.mock.calls[2][0]).toBe(
 			'day-one-out/876E72B228F847379F296B1698CA3F61.md'
 		);
@@ -427,7 +446,7 @@ describe('importJson', () => {
 			uuid: '876E72B228F847379F296B1698CA3F61',
 		});
 
-		// entry 4
+		// entry 4 - Media
 		expect(vault.create.mock.calls[3][0]).toBe(
 			'day-one-out/479270F4CAD1429AB1564DB34D0FE337.md'
 		);

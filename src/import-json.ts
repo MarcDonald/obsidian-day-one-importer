@@ -20,7 +20,7 @@ const DayOneItemSchema = z.object({
 	text: z.string().default(''),
 	userActivity: z
 		.object({
-			activityName: z.string(),
+			activityName: z.string().optional(),
 		})
 		.optional(),
 	location: z
