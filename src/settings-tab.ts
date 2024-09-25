@@ -8,6 +8,7 @@ import {
 } from 'obsidian';
 import DayOneImporter from './main';
 import { importJson } from './import-json';
+import { updateFrontMatter } from './update-front-matter';
 
 const ILLEGAL_FILENAME_CHARACTERS = ['[', ']', ':', '\\', '/', '^', '|', '#'];
 
@@ -166,6 +167,65 @@ export class SettingsTab extends PluginSettingTab {
 						if (res.failures.length > 0) {
 							await this.app.vault.create(
 								`${this.plugin.settings.outDirectory}/Failed Imports ${moment().toDate().getTime()}.md`,
+								res.failures
+									.map(
+										(failure) =>
+											`- ${failure.entry.uuid} - ${moment(failure.entry.creationDate).format('YYYY-MM-DD HH:mm:ss')}\n  - ${failure.reason}`
+									)
+									.join('\n')
+							);
+						}
+					} catch (err) {
+						new Notice(err);
+					} finally {
+						button.setDisabled(false);
+					}
+				})
+			);
+
+		new Setting(containerEl).setName('Update FrontMatter').setHeading();
+
+		new Setting(containerEl)
+			.setName(
+				'IMPORTANT: This is a destructive operation and will overwrite any existing FrontMatter in previously imported entries.'
+			)
+			.setDesc(
+				'You must use the same settings as you did when doing the initial import.'
+			);
+
+		new Setting(containerEl)
+			.addProgressBar((pb) => {
+				pb.setValue(0);
+				this.plugin.percentageUpdateRef = this.plugin.importEvents.on(
+					'percentage-update',
+					(newPercentage: number) => {
+						pb.setValue(newPercentage);
+					}
+				);
+			})
+			.addButton((button) =>
+				button.setButtonText('Update Frontmatter').onClick(async () => {
+					try {
+						button.setDisabled(true);
+						const res = await updateFrontMatter(
+							this.app.vault,
+							this.plugin.settings,
+							this.app.fileManager,
+							this.plugin.importEvents
+						);
+						new Notice(
+							`Successful: ${res.successCount} - Failed: ${res.failures.length} - Ignored: ${res.ignoreCount}`
+						);
+
+						res.failures.forEach((failure) => {
+							new Notice(
+								`Entry ${failure.entry.uuid} failed to update. ${failure.reason}`
+							);
+						});
+
+						if (res.failures.length > 0) {
+							await this.app.vault.create(
+								`${this.plugin.settings.outDirectory}/Failed Updates ${moment().toDate().getTime()}.md`,
 								res.failures
 									.map(
 										(failure) =>
