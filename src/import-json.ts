@@ -1,59 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-	Events,
-	FileManager,
-	moment,
-	normalizePath,
-	TFile,
-	Vault,
-} from 'obsidian';
+import { Events, FileManager, Vault } from 'obsidian';
 import { DayOneImporterSettings } from './main';
 import { z } from 'zod';
-
-const DayOneItemSchema = z.object({
-	modifiedDate: z.string().datetime(),
-	creationDate: z.string().datetime(),
-	isAllDay: z.boolean().optional(),
-	isPinned: z.boolean().optional(),
-	starred: z.boolean().optional(),
-	tags: z.array(z.string()).optional(),
-	text: z.string().default(''),
-	userActivity: z
-		.object({
-			activityName: z.string().optional(),
-		})
-		.optional(),
-	location: z
-		.object({
-			localityName: z.string().optional(),
-			country: z.string().optional(),
-			placeName: z.string().optional(),
-			latitude: z.number(),
-			longitude: z.number(),
-		})
-		.optional(),
-	uuid: z.string(),
-	photos: z
-		.array(
-			z.object({
-				type: z.string(),
-				identifier: z.string(),
-				md5: z.string(),
-			})
-		)
-		.optional(),
-	videos: z
-		.array(
-			z.object({
-				type: z.string(),
-				identifier: z.string(),
-				md5: z.string(),
-			})
-		)
-		.optional(),
-});
-
-type DayOneItem = z.infer<typeof DayOneItemSchema>;
+import { DayOneItem, DayOneItemSchema } from './schema';
+import { buildFileName } from './utils';
+import { writeFrontMatter } from './update-front-matter';
 
 export async function importJson(
 	vault: Vault,
@@ -103,7 +54,7 @@ export async function importJson(
 					}
 				);
 
-				await addFrontMatter(file, item, fileManager);
+				await writeFrontMatter(file, item, fileManager);
 
 				successCount++;
 			} catch (e) {
@@ -135,22 +86,6 @@ export async function importJson(
 	} catch (err) {
 		console.error(err);
 		throw err;
-	}
-}
-
-function buildFileName(settings: DayOneImporterSettings, item: DayOneItem) {
-	if (settings.dateBasedFileNames) {
-		if (item.isAllDay) {
-			return normalizePath(
-				`${moment(item.creationDate).format(settings.dateBasedAllDayFileNameFormat)}.md`
-			);
-		} else {
-			return normalizePath(
-				`${moment(item.creationDate).format(settings.dateBasedFileNameFormat)}.md`
-			);
-		}
-	} else {
-		return normalizePath(`${item.uuid}.md`);
 	}
 }
 
@@ -200,51 +135,4 @@ function buildMediaReplacement(item: DayOneItem, match: RegExpMatchArray) {
 		replace: match[0],
 		with: match[0],
 	};
-}
-
-async function addFrontMatter(
-	file: TFile,
-	item: DayOneItem,
-	fileManager: FileManager
-) {
-	await fileManager.processFrontMatter(file, (frontMatter) => {
-		frontMatter['creationDate'] =
-			`${moment(item.creationDate).format('YYYY-MM-DD')}T${moment(item.creationDate).format('HH:mm')}`;
-		frontMatter['modifiedDate'] =
-			`${moment(item.modifiedDate).format('YYYY-MM-DD')}T${moment(item.modifiedDate).format('HH:mm')}`;
-		frontMatter['uuid'] = item.uuid;
-		if (item.isAllDay) {
-			frontMatter['isAllDay'] = true;
-		}
-		if (item.isPinned) {
-			frontMatter['pinned'] = true;
-		}
-		if (item.starred) {
-			frontMatter['starred'] = true;
-		}
-		if (item.tags?.length ?? 0 > 0) {
-			frontMatter['tags'] = item.tags;
-		}
-		if (item.userActivity?.activityName) {
-			frontMatter['activity'] = item.userActivity.activityName;
-		}
-		if (item.location) {
-			if (
-				item.location?.placeName &&
-				item.location?.localityName &&
-				item.location?.country
-			) {
-				frontMatter['location'] =
-					`${item.location.placeName}, ${item.location.localityName}, ${item.location.country}`;
-			} else {
-				frontMatter['location'] =
-					`${item.location.latitude}, ${item.location.longitude}`;
-			}
-
-			if (item.location.latitude && item.location.longitude) {
-				frontMatter['latitude'] = item.location.latitude;
-				frontMatter['longitude'] = item.location.longitude;
-			}
-		}
-	});
 }
