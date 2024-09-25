@@ -240,6 +240,11 @@ async function addFrontMatter(
 				frontMatter['location'] =
 					`${item.location.latitude}, ${item.location.longitude}`;
 			}
+
+			if (item.location.latitude && item.location.longitude) {
+				frontMatter['latitude'] = item.location.latitude;
+				frontMatter['longitude'] = item.location.longitude;
+			}
 		}
 	});
 }
