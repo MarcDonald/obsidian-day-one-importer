@@ -54,7 +54,7 @@ export async function importJson(
 					}
 				);
 
-				await writeFrontMatter(file, item, fileManager);
+				await writeFrontMatter(file, item, settings, fileManager);
 
 				successCount++;
 			} catch (e) {

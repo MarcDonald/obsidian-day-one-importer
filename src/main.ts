@@ -9,6 +9,7 @@ export interface DayOneImporterSettings {
 	dateBasedFileNameFormat: string;
 	dateBasedAllDayFileNameFormat: string;
 	ignoreExistingFiles: boolean;
+	separateCoordinateFields: boolean;
 }
 
 export const DEFAULT_SETTINGS: DayOneImporterSettings = {
@@ -19,6 +20,7 @@ export const DEFAULT_SETTINGS: DayOneImporterSettings = {
 	dateBasedFileNameFormat: 'YYYY-MM-DD HHmmss',
 	dateBasedAllDayFileNameFormat: 'YYYY-MM-DD',
 	ignoreExistingFiles: false,
+	separateCoordinateFields: false,
 };
 
 export default class DayOneImporter extends Plugin {
