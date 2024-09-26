@@ -222,6 +222,33 @@ describe('updateFrontMatter', () => {
 			uuid: 'DF8B32A3FE25400BBBB3A7BBFCD23CE7',
 			isAllDay: true,
 			location: 'Eurpocar Dublin Airport Terminal 2, Swords, Ireland',
+			coordinates: `53.4276123046875, -6.239171028137207`,
+			modifiedDate: '2024-04-19T21:55',
+			starred: true,
+			tags: ['another-dev-testing-tag', 'dev-testing-tag'],
+		});
+	});
+
+	test('should use separate coordinate fields if enabled', async () => {
+		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
+		vault.read.mockResolvedValue(JSON.stringify(testData));
+
+		await updateFrontMatter(
+			vault,
+			{
+				...DEFAULT_SETTINGS,
+				separateCoordinateFields: true,
+			},
+			fileManager,
+			importEvents
+		);
+
+		expect(frontmatterObjs[0]).toEqual({
+			activity: 'Train',
+			creationDate: '2024-04-16T23:00',
+			uuid: 'DF8B32A3FE25400BBBB3A7BBFCD23CE7',
+			isAllDay: true,
+			location: 'Eurpocar Dublin Airport Terminal 2, Swords, Ireland',
 			latitude: 53.4276123046875,
 			longitude: -6.239171028137207,
 			modifiedDate: '2024-04-19T21:55',

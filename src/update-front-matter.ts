@@ -45,7 +45,7 @@ export async function updateFrontMatter(
 						`${settings.outDirectory}/${fileName}`
 					);
 					if (entryFile) {
-						await writeFrontMatter(entryFile, item, fileManager);
+						await writeFrontMatter(entryFile, item, settings, fileManager);
 					} else {
 						throw new Error(`Could not find file ${fileName}`);
 					}
@@ -80,6 +80,7 @@ export async function updateFrontMatter(
 export async function writeFrontMatter(
 	file: TFile,
 	item: DayOneItem,
+	settings: DayOneImporterSettings,
 	fileManager: FileManager
 ) {
 	await fileManager.processFrontMatter(file, (frontMatter) => {
@@ -117,8 +118,16 @@ export async function writeFrontMatter(
 			}
 
 			if (item.location.latitude && item.location.longitude) {
-				frontMatter['latitude'] = item.location.latitude;
-				frontMatter['longitude'] = item.location.longitude;
+				if (settings.separateCoordinateFields) {
+					frontMatter['coordinates'] = undefined;
+					frontMatter['latitude'] = item.location.latitude;
+					frontMatter['longitude'] = item.location.longitude;
+				} else {
+					frontMatter['latitude'] = undefined;
+					frontMatter['longitude'] = undefined;
+					frontMatter['coordinates'] =
+						`${item.location.latitude}, ${item.location.longitude}`;
+				}
 			}
 		}
 	});

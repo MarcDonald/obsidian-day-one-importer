@@ -400,8 +400,7 @@ describe('importJson', () => {
 			uuid: 'DF8B32A3FE25400BBBB3A7BBFCD23CE7',
 			isAllDay: true,
 			location: 'Eurpocar Dublin Airport Terminal 2, Swords, Ireland',
-			latitude: 53.4276123046875,
-			longitude: -6.239171028137207,
+			coordinates: `53.4276123046875, -6.239171028137207`,
 			modifiedDate: '2024-04-19T21:55',
 			starred: true,
 			tags: ['another-dev-testing-tag', 'dev-testing-tag'],
@@ -443,9 +442,7 @@ describe('importJson', () => {
 		expect(frontmatterObjs[2]).toEqual({
 			creationDate: '2024-04-19T21:48',
 			location: 'Dundas Castle, Edinburgh, United Kingdom',
-			latitude: 55.975017547607422,
-			// eslint-disable-next-line @typescript-eslint/no-loss-of-precision
-			longitude: -3.4143447875976562,
+			coordinates: `55.97501754760742, -3.4143447875976562`,
 			modifiedDate: '2024-04-19T21:48',
 			pinned: true,
 			uuid: '876E72B228F847379F296B1698CA3F61',
@@ -468,8 +465,7 @@ describe('importJson', () => {
 			location: 'London Eye, London, United Kingdom',
 			modifiedDate: '2024-04-19T21:57',
 			uuid: '479270F4CAD1429AB1564DB34D0FE337',
-			longitude: -0.11951349675655365,
-			latitude: 51.503360748291016,
+			coordinates: `51.503360748291016, -0.11951349675655365`,
 		});
 
 		expect(importEvents.trigger).toHaveBeenNthCalledWith(

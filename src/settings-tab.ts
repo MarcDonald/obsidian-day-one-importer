@@ -134,6 +134,24 @@ export class SettingsTab extends PluginSettingTab {
 					})
 			);
 
+		new Setting(containerEl).setName('FrontMatter').setHeading();
+
+		new Setting(containerEl)
+			.setName('Separate co-ordinate fields')
+			.setDesc(
+				'If enabled then latitude and longitude will be stored in separate fields in the frontmatter, otherwise they will be combined into a single field.'
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.separateCoordinateFields)
+					.onChange(async (value) => {
+						this.plugin.settings.separateCoordinateFields = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl).setName('Import').setHeading();
+
 		new Setting(containerEl)
 			.addProgressBar((pb) => {
 				pb.setValue(0);
@@ -190,7 +208,7 @@ export class SettingsTab extends PluginSettingTab {
 				'IMPORTANT: This is a destructive operation and will overwrite any existing FrontMatter in previously imported entries.'
 			)
 			.setDesc(
-				'You must use the same settings as you did when doing the initial import.'
+				'You must use the same file name settings as you did when doing the initial import.'
 			);
 
 		new Setting(containerEl)
