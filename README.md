@@ -50,7 +50,7 @@ Easily convert your Day One journals into Obsidian markdown.
 - If entry is starred
 - If entry is pinned
 - If entry is "all day"
-- Location (name)
+- Location (name & coordinates)
 - Activity (e.g. walking, cycling, train, flying, etc)
 
 ### Not Currently Planned

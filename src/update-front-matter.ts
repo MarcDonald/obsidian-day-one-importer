@@ -126,7 +126,7 @@ export async function writeFrontMatter(
 					frontMatter['latitude'] = undefined;
 					frontMatter['longitude'] = undefined;
 					frontMatter['coordinates'] =
-						`${item.location.latitude}, ${item.location.longitude}`;
+						`${item.location.latitude},${item.location.longitude}`;
 				}
 			}
 		}

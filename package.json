@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-day-one-importer",
-	"version": "1.1.1",
+	"version": "1.1.2",
 	"description": "Import Day One journals",
 	"main": "main.js",
 	"scripts": {

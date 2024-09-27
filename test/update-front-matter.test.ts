@@ -222,7 +222,7 @@ describe('updateFrontMatter', () => {
 			uuid: 'DF8B32A3FE25400BBBB3A7BBFCD23CE7',
 			isAllDay: true,
 			location: 'Eurpocar Dublin Airport Terminal 2, Swords, Ireland',
-			coordinates: `53.4276123046875, -6.239171028137207`,
+			coordinates: `53.4276123046875,-6.239171028137207`,
 			modifiedDate: '2024-04-19T21:55',
 			starred: true,
 			tags: ['another-dev-testing-tag', 'dev-testing-tag'],
