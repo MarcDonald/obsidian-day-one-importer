@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Events, FileManager, Vault } from 'obsidian';
 import { DayOneImporterSettings } from './main';
-import { z } from 'zod';
 import { DayOneItem, DayOneItemSchema } from './schema';
 import { buildFileName } from './utils';
 import { writeFrontMatter } from './update-front-matter';
+import { ZodError } from 'zod';
 
 export async function importJson(
 	vault: Vault,
@@ -23,7 +23,34 @@ export async function importJson(
 
 		const fileData = await vault.read(file);
 		const parsedFileData = JSON.parse(fileData);
-		const entries = z.array(DayOneItemSchema).parse(parsedFileData.entries);
+		const validEntries: DayOneItem[] = [];
+		const invalidEntries: {
+			entryId?: string;
+			creationDate?: string;
+			reason: ZodError;
+		}[] = [];
+
+		if (!Array.isArray(parsedFileData.entries)) {
+			throw new Error('Invalid file format');
+		}
+
+		parsedFileData.entries.forEach((entry: unknown) => {
+			const parsedEntry = DayOneItemSchema.safeParse(entry);
+			if (parsedEntry.success) {
+				validEntries.push(parsedEntry.data);
+			} else {
+				const entryId = (entry as any)?.uuid;
+				const entryCreationDate = (entry as any)?.creationDate;
+				invalidEntries.push({
+					entryId,
+					creationDate: entryCreationDate,
+					reason: parsedEntry.error,
+				});
+				console.error(
+					`Invalid entry: ${entryId} ${entryCreationDate} - ${parsedEntry.error}`
+				);
+			}
+		});
 
 		let successCount = 0;
 		let ignoreCount = 0;
@@ -32,7 +59,7 @@ export async function importJson(
 		const fileNames = new Set();
 
 		let percentage = 0;
-		for (const [index, item] of entries.entries()) {
+		for (const [index, item] of validEntries.entries()) {
 			try {
 				const fileName = buildFileName(settings, item);
 
@@ -73,15 +100,16 @@ export async function importJson(
 			}
 
 			const entryNumber = index + 1;
-			percentage = (entryNumber / entries.length) * 100;
+			percentage = (entryNumber / validEntries.length) * 100;
 			importEvents.trigger('percentage-update', percentage);
 		}
 
 		return {
-			total: entries.length,
+			total: validEntries.length + invalidEntries.length,
 			successCount,
 			ignoreCount,
 			failures,
+			invalidEntries,
 		};
 	} catch (err) {
 		console.error(err);
@@ -117,7 +145,7 @@ function buildMediaReplacement(item: DayOneItem, match: RegExpMatchArray) {
 	let mediaObj = item.photos?.find((p: any) => p.identifier === match[1]);
 
 	if (!mediaObj) {
-		mediaObj = item.videos?.find((p: any) => p.identifier === match[1]);
+		mediaObj = item.videos?.find((v: any) => v.identifier === match[1]);
 	}
 
 	if (mediaObj) {
