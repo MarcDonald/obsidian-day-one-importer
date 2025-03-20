@@ -173,7 +173,7 @@ export class SettingsTab extends PluginSettingTab {
 							this.plugin.importEvents
 						);
 						new Notice(
-							`Successful: ${res.successCount} - Failed: ${res.failures.length} - Ignored: ${res.ignoreCount}`
+							`Successful: ${res.successCount}\nFailed: ${res.failures.length}\nInvalid: ${res.invalidEntries.length}\nIgnored: ${res.ignoreCount}`
 						);
 
 						res.failures.forEach((failure) => {
@@ -182,17 +182,30 @@ export class SettingsTab extends PluginSettingTab {
 							);
 						});
 
-						if (res.failures.length > 0) {
-							await this.app.vault.create(
-								`${this.plugin.settings.outDirectory}/Failed Imports ${moment().toDate().getTime()}.md`,
-								res.failures
-									.map(
-										(failure) =>
-											`- ${failure.entry.uuid} - ${moment(failure.entry.creationDate).format('YYYY-MM-DD HH:mm:ss')}\n  - ${failure.reason}`
-									)
-									.join('\n')
-							);
+						let errorFileContent: string = '';
+
+						if (res.invalidEntries.length > 0) {
+							errorFileContent += res.invalidEntries
+								.map(
+									(invalidEntry) =>
+										`- ${invalidEntry.entryId} - ${moment(invalidEntry.creationDate).format('YYYY-MM-DD HH:mm:ss')}\n  - ${JSON.stringify(invalidEntry.reason)}`
+								)
+								.join('\n');
 						}
+
+						if (res.failures.length > 0) {
+							errorFileContent += res.failures
+								.map(
+									(failure) =>
+										`- ${failure.entry.uuid} - ${moment(failure.entry.creationDate).format('YYYY-MM-DD HH:mm:ss')}\n  - ${failure.reason}`
+								)
+								.join('\n');
+						}
+
+						await this.app.vault.create(
+							`${this.plugin.settings.outDirectory}/Failed Imports ${moment().toDate().getTime()}.md`,
+							errorFileContent
+						);
 					} catch (err) {
 						new Notice(err);
 					} finally {

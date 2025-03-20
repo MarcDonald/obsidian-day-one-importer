@@ -11,6 +11,8 @@ import {
 	test,
 } from '@jest/globals';
 import * as testData from './__test_data__/day-one-in/Dev Journal.json';
+import * as testDataWithInvalidEntry from './__test_data__/day-one-in/Dev Journal One Invalid.json';
+import { ZodError } from 'zod';
 
 const mockEntry = {
 	creationDevice: 'marcBook Pro',
@@ -362,7 +364,186 @@ describe('importJson', () => {
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(JSON.stringify(testData));
 
-		await importJson(vault, DEFAULT_SETTINGS, fileManager, importEvents);
+		const result = await importJson(
+			vault,
+			DEFAULT_SETTINGS,
+			fileManager,
+			importEvents
+		);
+
+		// Returned object
+		expect(result).toEqual({
+			total: 5,
+			successCount: 5,
+			ignoreCount: 0,
+			failures: [],
+			invalidEntries: [],
+		});
+
+		// entry 1 - Markdown
+		expect(vault.create.mock.calls[0][0]).toBe(
+			'day-one-out/DF8B32A3FE25400BBBB3A7BBFCD23CE7.md'
+		);
+		expect(vault.create.mock.calls[0][1]).toBe(
+			'# Header 1\n\n' +
+				'## Header 2\n\n' +
+				'### Header 3\n\n' +
+				'#### Header 4\n\n' +
+				'##### Header 5\n\n' +
+				'###### Header 6\n\n' +
+				'> Quote block\n\n' +
+				'Highlighted\n\n' +
+				'---\n\n' +
+				'**Bold**\n\n' +
+				'*Italic*\n\n' +
+				'- List item 1\n' +
+				'- List item 2\n\n' +
+				'- [ ] Check item 1\n' +
+				'- [ ] Check item 2\n\n' +
+				'1. List number 1\n' +
+				'2. List number 2\n\n' +
+				'`Code span` \n\n' +
+				'```\nCode block\n```\n\n\n' +
+				'![](31c871f18f68d2fde4196ccba1f8ece1.jpeg)'
+		);
+		expect(vault.create.mock.calls[0][2]).toEqual({
+			ctime: 1713308400000,
+			mtime: 1713563751000,
+		});
+		expect(frontmatterObjs[0]).toEqual({
+			activity: 'Train',
+			creationDate: '2024-04-16T23:00',
+			uuid: 'DF8B32A3FE25400BBBB3A7BBFCD23CE7',
+			isAllDay: true,
+			location: 'Eurpocar Dublin Airport Terminal 2, Swords, Ireland',
+			coordinates: `53.4276123046875,-6.239171028137207`,
+			modifiedDate: '2024-04-19T21:55',
+			starred: true,
+			tags: ['another-dev-testing-tag', 'dev-testing-tag'],
+		});
+
+		// entry 2 - Multiple paragraphs
+		expect(vault.create.mock.calls[1][0]).toBe(
+			'day-one-out/1461153D91EC48C180C606C853FBFD83.md'
+		);
+		expect(vault.create.mock.calls[1][1]).toBe(
+			'Pariatur aute nulla incididunt. Ad dolor irure est in magna est. Ut ex Lorem reprehenderit incididunt enim eiusmod et. Aute sit duis labore quis tempor laborum eiusmod ut ad labore ad.\n\n' +
+				'Dolore fugiat qui duis do cupidatat. Amet ut ad aute elit dolor. Lorem nisi adipisicing elit consectetur officia reprehenderit sunt cupidatat reprehenderit in anim est est occaecat duis. Ut veniam ad id aliqua ex excepteur consequat tempor ut eu ex deserunt duis. Consequat labore minim ea veniam Lorem laboris esse minim velit do nostrud nisi ullamco. Dolore adipisicing do ea.'
+		);
+		expect(vault.create.mock.calls[1][2]).toEqual({
+			ctime: 1713394800000,
+			mtime: 1713563393000,
+		});
+		expect(frontmatterObjs[1]).toEqual({
+			creationDate: '2024-04-17T23:00',
+			isAllDay: true,
+			modifiedDate: '2024-04-19T21:49',
+			uuid: '1461153D91EC48C180C606C853FBFD83',
+		});
+
+		// entry 3 - Hyphens and parentheses
+		expect(vault.create.mock.calls[2][0]).toBe(
+			'day-one-out/876E72B228F847379F296B1698CA3F61.md'
+		);
+		expect(vault.create.mock.calls[2][1]).toBe(
+			'"This text is in quotes"\n' +
+				'This-text-is-hyphenated\n' +
+				'(This text is in parentheses)\n\n' +
+				'Dolore ex commodo aliqua irure ullamco quis aliquip. Consectetur et magna ullamco amet nisi. Ut commodo officia laborum aliquip Lorem adipisicing ipsum do amet consequat. Fugiat officia dolore aute do quis sunt exercitation. Pariatur sint exercitation ut eiusmod velit sint exercitation ullamco minim commodo qui tempor adipisicing esse amet. Lorem ad sit ullamco dolore labore commodo ea ad officia quis deserunt. Adipisicing duis qui elit ipsum aliqua ipsum ea.'
+		);
+		expect(vault.create.mock.calls[2][2]).toEqual({
+			ctime: 1713563316000,
+			mtime: 1713563332000,
+		});
+		expect(frontmatterObjs[2]).toEqual({
+			creationDate: '2024-04-19T21:48',
+			location: 'Dundas Castle, Edinburgh, United Kingdom',
+			coordinates: `55.97501754760742,-3.4143447875976562`,
+			modifiedDate: '2024-04-19T21:48',
+			pinned: true,
+			uuid: '876E72B228F847379F296B1698CA3F61',
+		});
+
+		// entry 4 - Media
+		expect(vault.create.mock.calls[3][0]).toBe(
+			'day-one-out/479270F4CAD1429AB1564DB34D0FE337.md'
+		);
+		expect(vault.create.mock.calls[3][1]).toBe(
+			'Ipsum labore tempor eu elit voluptate incididunt sint ea enim aute do minim. Quis mollit ullamco nostrud dolore id id commodo veniam consequat commodo dolore ullamco tempor tempor commodo. Lorem tempor laboris in ipsum ea veniam laboris id sit dolor anim sit consequat nulla et.![](31c871f18f68d2fde4196ccba1f8ece1.jpeg). Nostrud est magna proident nostrud. Velit aliqua consectetur non ea id sit nostrud irure ut. Nostrud ut id consequat commodo ea labore laborum nisi in duis nisi. Aliquip nisi deserunt id laborum excepteur.\n\n' +
+				'![](6b73e9bd86a91d3a7ead09268b0fb266.jpeg)'
+		);
+		expect(vault.create.mock.calls[3][2]).toEqual({
+			ctime: 1713563753000,
+			mtime: 1713563820000,
+		});
+		expect(frontmatterObjs[3]).toEqual({
+			creationDate: '2024-04-19T21:55',
+			location: 'London Eye, London, United Kingdom',
+			modifiedDate: '2024-04-19T21:57',
+			uuid: '479270F4CAD1429AB1564DB34D0FE337',
+			coordinates: `51.503360748291016,-0.11951349675655365`,
+		});
+
+		expect(importEvents.trigger).toHaveBeenNthCalledWith(
+			1,
+			'percentage-update',
+			20
+		);
+		expect(importEvents.trigger).toHaveBeenNthCalledWith(
+			2,
+			'percentage-update',
+			40
+		);
+		expect(importEvents.trigger).toHaveBeenNthCalledWith(
+			3,
+			'percentage-update',
+			60
+		);
+		expect(importEvents.trigger).toHaveBeenNthCalledWith(
+			4,
+			'percentage-update',
+			80
+		);
+		expect(importEvents.trigger).toHaveBeenNthCalledWith(
+			5,
+			'percentage-update',
+			100
+		);
+	});
+
+	test('full import with invalid entries', async () => {
+		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
+		vault.read.mockResolvedValue(JSON.stringify(testDataWithInvalidEntry));
+
+		const result = await importJson(
+			vault,
+			DEFAULT_SETTINGS,
+			fileManager,
+			importEvents
+		);
+
+		// Returned object
+		expect(result).toEqual({
+			total: 6,
+			successCount: 5,
+			ignoreCount: 0,
+			failures: [],
+			invalidEntries: [
+				{
+					entryId: '1461153D91EC48C180C606C853FBFD83',
+					creationDate: '2024-04-17T23:00:00Z',
+					reason: new ZodError([
+						{
+							code: 'invalid_type',
+							expected: 'string',
+							received: 'object',
+							path: ['text'],
+							message: 'Expected string, received object',
+						},
+					]),
+				},
+			],
+		});
 
 		// entry 1 - Markdown
 		expect(vault.create.mock.calls[0][0]).toBe(
