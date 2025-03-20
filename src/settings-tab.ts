@@ -9,6 +9,7 @@ import {
 import DayOneImporter from './main';
 import { importJson } from './import-json';
 import { updateFrontMatter } from './update-front-matter';
+import { ImportResult } from './utils';
 
 const ILLEGAL_FILENAME_CHARACTERS = ['[', ']', ':', '\\', '/', '^', '|', '#'];
 
@@ -172,40 +173,7 @@ export class SettingsTab extends PluginSettingTab {
 							this.app.fileManager,
 							this.plugin.importEvents
 						);
-						new Notice(
-							`Successful: ${res.successCount}\nFailed: ${res.failures.length}\nInvalid: ${res.invalidEntries.length}\nIgnored: ${res.ignoreCount}`
-						);
-
-						res.failures.forEach((failure) => {
-							new Notice(
-								`Entry ${failure.entry.uuid} failed to import. ${failure.reason}`
-							);
-						});
-
-						let errorFileContent: string = '';
-
-						if (res.invalidEntries.length > 0) {
-							errorFileContent += res.invalidEntries
-								.map(
-									(invalidEntry) =>
-										`- ${invalidEntry.entryId} - ${moment(invalidEntry.creationDate).format('YYYY-MM-DD HH:mm:ss')}\n  - ${JSON.stringify(invalidEntry.reason)}`
-								)
-								.join('\n');
-						}
-
-						if (res.failures.length > 0) {
-							errorFileContent += res.failures
-								.map(
-									(failure) =>
-										`- ${failure.entry.uuid} - ${moment(failure.entry.creationDate).format('YYYY-MM-DD HH:mm:ss')}\n  - ${failure.reason}`
-								)
-								.join('\n');
-						}
-
-						await this.app.vault.create(
-							`${this.plugin.settings.outDirectory}/Failed Imports ${moment().toDate().getTime()}.md`,
-							errorFileContent
-						);
+						await this.handleImportResult(res, 'import');
 					} catch (err) {
 						new Notice(err);
 					} finally {
@@ -244,27 +212,7 @@ export class SettingsTab extends PluginSettingTab {
 							this.app.fileManager,
 							this.plugin.importEvents
 						);
-						new Notice(
-							`Successful: ${res.successCount} - Failed: ${res.failures.length} - Ignored: ${res.ignoreCount}`
-						);
-
-						res.failures.forEach((failure) => {
-							new Notice(
-								`Entry ${failure.entry.uuid} failed to update. ${failure.reason}`
-							);
-						});
-
-						if (res.failures.length > 0) {
-							await this.app.vault.create(
-								`${this.plugin.settings.outDirectory}/Failed Updates ${moment().toDate().getTime()}.md`,
-								res.failures
-									.map(
-										(failure) =>
-											`- ${failure.entry.uuid} - ${moment(failure.entry.creationDate).format('YYYY-MM-DD HH:mm:ss')}\n  - ${failure.reason}`
-									)
-									.join('\n')
-							);
-						}
+						await this.handleImportResult(res, 'update');
 					} catch (err) {
 						new Notice(err);
 					} finally {
@@ -272,6 +220,46 @@ export class SettingsTab extends PluginSettingTab {
 					}
 				})
 			);
+	}
+
+	async handleImportResult(res: ImportResult, type: 'import' | 'update') {
+		new Notice(
+			`${type === 'import' ? 'Import' : 'Update'} results:\n` +
+				`Successful: ${res.successCount}\nFailed: ${res.failures.length}\nInvalid: ${res.invalidEntries.length}\nIgnored: ${res.ignoreCount}`
+		);
+
+		res.failures.forEach((failure) => {
+			new Notice(
+				`Entry ${failure.entry.uuid} failed to ${type}. ${failure.reason}`
+			);
+		});
+
+		let errorFileContent: string = '';
+
+		if (res.invalidEntries.length > 0) {
+			errorFileContent += res.invalidEntries
+				.map(
+					(invalidEntry) =>
+						`- ${invalidEntry.entryId} - ${moment(invalidEntry.creationDate).format('YYYY-MM-DD HH:mm:ss')}\n  - ${JSON.stringify(invalidEntry.reason)}`
+				)
+				.join('\n');
+		}
+
+		if (res.failures.length > 0) {
+			errorFileContent += res.failures
+				.map(
+					(failure) =>
+						`- ${failure.entry.uuid} - ${moment(failure.entry.creationDate).format('YYYY-MM-DD HH:mm:ss')}\n  - ${failure.reason}`
+				)
+				.join('\n');
+		}
+
+		if (errorFileContent.length > 0) {
+			await this.app.vault.create(
+				`${this.plugin.settings.outDirectory}/Failed ${type === 'import' ? 'Imports' : 'Updates'} ${moment().toDate().getTime()}.md`,
+				errorFileContent
+			);
+		}
 	}
 }
 

@@ -1,16 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Events, FileManager, moment, TFile, Vault } from 'obsidian';
 import { DayOneImporterSettings } from './main';
-import { z } from 'zod';
 import { DayOneItem, DayOneItemSchema } from './schema';
-import { buildFileName } from './utils';
+import {
+	buildFileName,
+	ImportFailure,
+	ImportInvalidEntry,
+	ImportResult,
+} from './utils';
 
 export async function updateFrontMatter(
 	vault: Vault,
 	settings: DayOneImporterSettings,
 	fileManager: FileManager,
 	importEvents: Events
-) {
+): Promise<ImportResult> {
 	try {
 		const inFile = vault.getFileByPath(
 			settings.inDirectory + '/' + settings.inFileName
@@ -22,16 +26,40 @@ export async function updateFrontMatter(
 
 		const fileData = await vault.read(inFile);
 		const parsedFileData = JSON.parse(fileData);
-		const entries = z.array(DayOneItemSchema).parse(parsedFileData.entries);
+
+		const validEntries: DayOneItem[] = [];
+		const invalidEntries: ImportInvalidEntry[] = [];
+
+		if (!Array.isArray(parsedFileData.entries)) {
+			throw new Error('Invalid file format');
+		}
+
+		parsedFileData.entries.forEach((entry: unknown) => {
+			const parsedEntry = DayOneItemSchema.safeParse(entry);
+			if (parsedEntry.success) {
+				validEntries.push(parsedEntry.data);
+			} else {
+				const entryId = (entry as any)?.uuid;
+				const entryCreationDate = (entry as any)?.creationDate;
+				invalidEntries.push({
+					entryId,
+					creationDate: entryCreationDate,
+					reason: parsedEntry.error,
+				});
+				console.error(
+					`Invalid entry: ${entryId} ${entryCreationDate} - ${parsedEntry.error}`
+				);
+			}
+		});
 
 		let successCount = 0;
 		const ignoreCount = 0;
-		const failures: { entry: DayOneItem; reason: string }[] = [];
+		const failures: ImportFailure[] = [];
 
 		const fileNames = new Set();
 
 		let percentage = 0;
-		for (const [index, item] of entries.entries()) {
+		for (const [index, item] of validEntries.entries()) {
 			try {
 				const fileName = buildFileName(settings, item);
 
@@ -61,15 +89,16 @@ export async function updateFrontMatter(
 			}
 
 			const entryNumber = index + 1;
-			percentage = (entryNumber / entries.length) * 100;
+			percentage = (entryNumber / validEntries.length) * 100;
 			importEvents.trigger('percentage-update', percentage);
 		}
 
 		return {
-			total: entries.length,
+			total: validEntries.length + invalidEntries.length,
 			successCount,
 			ignoreCount,
 			failures,
+			invalidEntries,
 		};
 	} catch (err) {
 		console.error(err);
