@@ -11,6 +11,8 @@ import {
 } from '@jest/globals';
 import { updateFrontMatter } from '../src/update-front-matter';
 import * as testData from './__test_data__/day-one-in/Dev Journal.json';
+import * as testDataWithInvalidEntry from './__test_data__/day-one-in/Dev Journal One Invalid.json';
+import { ZodError } from 'zod';
 
 const mockEntry = {
 	creationDevice: 'marcBook Pro',
@@ -153,7 +155,7 @@ describe('updateFrontMatter', () => {
 			})
 		);
 
-		await updateFrontMatter(
+		const result = await updateFrontMatter(
 			vault,
 			{
 				...DEFAULT_SETTINGS,
@@ -164,6 +166,15 @@ describe('updateFrontMatter', () => {
 			fileManager,
 			importEvents
 		);
+
+		// Returned object
+		expect(result).toEqual({
+			total: 2,
+			successCount: 2,
+			ignoreCount: 0,
+			failures: [],
+			invalidEntries: [],
+		});
 
 		expect(vault.getFileByPath.mock.calls[1][0]).toBe(
 			'day-one-out/202404192155530.md'
@@ -193,7 +204,7 @@ describe('updateFrontMatter', () => {
 			})
 		);
 
-		await updateFrontMatter(
+		const result = await updateFrontMatter(
 			vault,
 			{
 				...DEFAULT_SETTINGS,
@@ -202,6 +213,15 @@ describe('updateFrontMatter', () => {
 			fileManager,
 			importEvents
 		);
+
+		// Returned object
+		expect(result).toEqual({
+			total: 2,
+			successCount: 2,
+			ignoreCount: 0,
+			failures: [],
+			invalidEntries: [],
+		});
 
 		expect(vault.getFileByPath.mock.calls[0][0]).toBe(
 			'day-one-in/journal.json'
@@ -214,7 +234,21 @@ describe('updateFrontMatter', () => {
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(JSON.stringify(testData));
 
-		await updateFrontMatter(vault, DEFAULT_SETTINGS, fileManager, importEvents);
+		const result = await updateFrontMatter(
+			vault,
+			DEFAULT_SETTINGS,
+			fileManager,
+			importEvents
+		);
+
+		// Returned object
+		expect(result).toEqual({
+			total: 5,
+			successCount: 5,
+			ignoreCount: 0,
+			failures: [],
+			invalidEntries: [],
+		});
 
 		expect(frontmatterObjs[0]).toEqual({
 			activity: 'Train',
@@ -233,7 +267,7 @@ describe('updateFrontMatter', () => {
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(JSON.stringify(testData));
 
-		await updateFrontMatter(
+		const result = await updateFrontMatter(
 			vault,
 			{
 				...DEFAULT_SETTINGS,
@@ -243,6 +277,15 @@ describe('updateFrontMatter', () => {
 			importEvents
 		);
 
+		// Returned object
+		expect(result).toEqual({
+			total: 5,
+			successCount: 5,
+			ignoreCount: 0,
+			failures: [],
+			invalidEntries: [],
+		});
+
 		expect(frontmatterObjs[0]).toEqual({
 			activity: 'Train',
 			creationDate: '2024-04-16T23:00',
@@ -251,6 +294,53 @@ describe('updateFrontMatter', () => {
 			location: 'Eurpocar Dublin Airport Terminal 2, Swords, Ireland',
 			latitude: 53.4276123046875,
 			longitude: -6.239171028137207,
+			modifiedDate: '2024-04-19T21:55',
+			starred: true,
+			tags: ['another-dev-testing-tag', 'dev-testing-tag'],
+		});
+	});
+
+	test('successful update with one invalid', async () => {
+		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
+		vault.read.mockResolvedValue(JSON.stringify(testDataWithInvalidEntry));
+
+		const result = await updateFrontMatter(
+			vault,
+			DEFAULT_SETTINGS,
+			fileManager,
+			importEvents
+		);
+
+		// Returned object
+		expect(result).toEqual({
+			total: 6,
+			successCount: 5,
+			ignoreCount: 0,
+			failures: [],
+			invalidEntries: [
+				{
+					entryId: '1461153D91EC48C180C606C853FBFD83',
+					creationDate: '2024-04-17T23:00:00Z',
+					reason: new ZodError([
+						{
+							code: 'invalid_type',
+							expected: 'string',
+							received: 'object',
+							path: ['text'],
+							message: 'Expected string, received object',
+						},
+					]),
+				},
+			],
+		});
+
+		expect(frontmatterObjs[0]).toEqual({
+			activity: 'Train',
+			creationDate: '2024-04-16T23:00',
+			uuid: 'DF8B32A3FE25400BBBB3A7BBFCD23CE7',
+			isAllDay: true,
+			location: 'Eurpocar Dublin Airport Terminal 2, Swords, Ireland',
+			coordinates: `53.4276123046875,-6.239171028137207`,
 			modifiedDate: '2024-04-19T21:55',
 			starred: true,
 			tags: ['another-dev-testing-tag', 'dev-testing-tag'],

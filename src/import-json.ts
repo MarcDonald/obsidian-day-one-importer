@@ -2,16 +2,20 @@
 import { Events, FileManager, Vault } from 'obsidian';
 import { DayOneImporterSettings } from './main';
 import { DayOneItem, DayOneItemSchema } from './schema';
-import { buildFileName } from './utils';
+import {
+	buildFileName,
+	ImportFailure,
+	ImportInvalidEntry,
+	ImportResult,
+} from './utils';
 import { writeFrontMatter } from './update-front-matter';
-import { ZodError } from 'zod';
 
 export async function importJson(
 	vault: Vault,
 	settings: DayOneImporterSettings,
 	fileManager: FileManager,
 	importEvents: Events
-) {
+): Promise<ImportResult> {
 	try {
 		const file = vault.getFileByPath(
 			settings.inDirectory + '/' + settings.inFileName
@@ -24,11 +28,7 @@ export async function importJson(
 		const fileData = await vault.read(file);
 		const parsedFileData = JSON.parse(fileData);
 		const validEntries: DayOneItem[] = [];
-		const invalidEntries: {
-			entryId?: string;
-			creationDate?: string;
-			reason: ZodError;
-		}[] = [];
+		const invalidEntries: ImportInvalidEntry[] = [];
 
 		if (!Array.isArray(parsedFileData.entries)) {
 			throw new Error('Invalid file format');
@@ -54,7 +54,7 @@ export async function importJson(
 
 		let successCount = 0;
 		let ignoreCount = 0;
-		const failures: { entry: DayOneItem; reason: string }[] = [];
+		const failures: ImportFailure[] = [];
 
 		const fileNames = new Set();
 
