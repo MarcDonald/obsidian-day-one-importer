@@ -259,7 +259,7 @@ describe('importJson', () => {
 		expect(vault.create.mock.calls[1][0]).toBe('day-one-out/def456.md');
 	});
 
-	test('should replace images or videos', async () => {
+	test('should replace images or videos or audios', async () => {
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(
 			JSON.stringify({
@@ -279,6 +279,41 @@ describe('importJson', () => {
 								creationDevice: 'marcBook Pro',
 								duration: 5.710108843537415,
 								md5: 'd500d6789ff2c211af3f507b17be8e66',
+							},
+						],
+						audios: [
+							{
+								fileSize: 47063,
+								location: {
+									region: {
+										center: {
+											longitude: -81.24,
+											latitude: 42.98,
+										},
+										radius: 75,
+									},
+									localityName: 'London',
+									country: 'Canada',
+									timeZoneName: 'America/Toronto',
+									administrativeArea: 'ON',
+									longitude: -81.24,
+									placeName: 'London',
+									latitude: 42.987583160400391,
+								},
+								orderInEntry: 1,
+								recordingDevice: 'AirPods Pro',
+								creationDevice: 'marcPhone 16 Pro Max',
+								audioChannels: 'Mono',
+								duration: 5.5019999999999998,
+								favorite: false,
+								identifier: '08514236013D4E4A9389BFDC24A5F727',
+								format: 'aac',
+								date: '2025-04-06T16:10:17Z',
+								height: 0,
+								width: 0,
+								md5: 'f35f41739499e70c6b2714e3a7d82d8c',
+								sampleRate: '32.0 kHz',
+								timeZoneName: 'Europe/London',
 							},
 						],
 						photos: [
@@ -315,6 +350,7 @@ describe('importJson', () => {
 						],
 						text:
 							'![](dayone-moment:/video/6F9B2DC7EADE4242A80DC76470D2264E)\n' +
+							'![](dayone-moment:/audio/08514236013D4E4A9389BFDC24A5F727)\n' +
 							'![](dayone-moment://24BD79E9E42F4A4CA0C9F384F547B5BC)',
 					},
 				],
@@ -325,6 +361,7 @@ describe('importJson', () => {
 
 		expect(vault.create.mock.calls[0][1]).toBe(
 			'![](d500d6789ff2c211af3f507b17be8e66.mp4)\n' +
+				'![](f35f41739499e70c6b2714e3a7d82d8c.m4a)\n' +
 				'![](31c871f18f68d2fde4196ccba1f8ece1.jpeg)'
 		);
 		expect(vault.create.mock.calls[0][2]).toEqual({

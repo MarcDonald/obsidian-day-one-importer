@@ -197,7 +197,42 @@
 			"editingTime": 10.006034016609192,
 			"creationDeviceModel": "MacBookPro18,3",
 			"duration": 0,
-			"text": "![](dayone-moment:/video/6F9B2DC7EADE4242A80DC76470D2264E)",
+			"text": "![](dayone-moment:/video/6F9B2DC7EADE4242A80DC76470D2264E)\n\n![](dayone-moment:/audio/08514236013D4E4A9389BFDC24A5F727)",
+			"audios": [
+				{
+					"fileSize": 47063,
+					"location": {
+						"region": {
+							"center": {
+								"longitude": -81.246597290039062,
+								"latitude": 42.987583160400391
+							},
+							"radius": 75
+						},
+						"localityName": "London",
+						"country": "Canada",
+						"timeZoneName": "America/Toronto",
+						"administrativeArea": "ON",
+						"longitude": -81.246597290039062,
+						"placeName": "London",
+						"latitude": 42.987583160400391
+					},
+					"orderInEntry": 1,
+					"recordingDevice": "AirPods Pro",
+					"creationDevice": "marcPhone 16 Pro Max",
+					"audioChannels": "Mono",
+					"duration": 5.5019999999999998,
+					"favorite": false,
+					"identifier": "08514236013D4E4A9389BFDC24A5F727",
+					"format": "aac",
+					"date": "2025-04-06T16:10:17Z",
+					"height": 0,
+					"width": 0,
+					"md5": "f35f41739499e70c6b2714e3a7d82d8c",
+					"sampleRate": "32.0 kHz",
+					"timeZoneName": "Europe/London"
+				}
+			],
 			"videos": [
 				{
 					"favorite": false,
@@ -220,7 +255,7 @@
 			"creationDeviceType": "MacBook Pro",
 			"creationOSName": "macOS",
 			"isAllDay": false,
-			"richText": "{\"contents\":[{\"embeddedObjects\":[{\"identifier\":\"E5B4E8C8B7EB4291AFDFFACB966A0382\",\"type\":\"video\"}]}],\"meta\":{\"created\":{\"platform\":\"com.bloombuilt.dayone-mac\",\"version\":1552},\"small-lines-removed\":true,\"version\":1}}",
+			"richText": "{\"contents\":[{\"embeddedObjects\":[{\"identifier\":\"6F9B2DC7EADE4242A80DC76470D2264E\",\"type\":\"video\"}]},{\"embeddedObjects\":[{\"identifier\":\"08514236013D4E4A9389BFDC24A5F727\",\"type\":\"audio\"}]}],\"meta\":{\"created\":{\"platform\":\"com.bloombuilt.dayone-ios\",\"version\":2602},\"small-lines-removed\":true,\"version\":1}}",
 			"creationDate": "2024-04-21T22:45:51Z",
 			"starred": false
 		}

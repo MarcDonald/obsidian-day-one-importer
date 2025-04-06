@@ -128,8 +128,12 @@ function buildFileBody(item: DayOneItem): string {
 		returned.matchAll(/!\[]\(dayone-moment:\/video\/([^)]+)\)/g)
 	);
 
-	const replacements = [...photoMoments, ...videoMoments].map((match) =>
-		buildMediaReplacement(item, match)
+	const audioMoments = Array.from(
+		returned.matchAll(/!\[]\(dayone-moment:\/audio\/([^)]+)\)/g)
+	);
+
+	const replacements = [...photoMoments, ...videoMoments, ...audioMoments].map(
+		(match) => buildMediaReplacement(item, match)
 	);
 
 	if (replacements.length > 0) {
@@ -148,6 +152,19 @@ function buildMediaReplacement(item: DayOneItem, match: RegExpMatchArray) {
 		mediaObj = item.videos?.find((v: any) => v.identifier === match[1]);
 	}
 
+	if (!mediaObj) {
+		const audioObj = item.audios?.find((v: any) => v.identifier === match[1]);
+		if (audioObj) {
+			mediaObj = {
+				identifier: audioObj.identifier,
+				md5: audioObj.md5,
+				// I tried a few different formats but Day One always seems to convert them to m4a
+				// May get some bug reports about this in the future if Day One isn't consistent
+				type: 'm4a',
+			};
+		}
+	}
+
 	if (mediaObj) {
 		const mediaFileName = `${mediaObj.md5}.${mediaObj.type}`;
 		return {
@@ -157,7 +174,7 @@ function buildMediaReplacement(item: DayOneItem, match: RegExpMatchArray) {
 	}
 
 	console.error(
-		`Could not find photo or video with identifier ${match[1]} in entry ${item.uuid}`
+		`Could not find photo, video, or audio with identifier ${match[1]} in entry ${item.uuid}`
 	);
 	return {
 		replace: match[0],
