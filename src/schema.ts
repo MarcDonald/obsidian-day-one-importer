@@ -44,7 +44,6 @@ export const DayOneItemSchema = z.object({
 	audios: z
 		.array(
 			z.object({
-				format: z.string(),
 				identifier: z.string(),
 				md5: z.string(),
 			})
