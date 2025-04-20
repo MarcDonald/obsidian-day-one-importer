@@ -1,67 +1,66 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Events, FileManager, moment, TFile, Vault } from 'obsidian';
+import { Events, FileManager, TFile, Vault } from 'obsidian';
 import { DayOneImporterSettings } from './main';
-import { DayOneItem, DayOneItemSchema } from './schema';
+import { DayOneItem } from './schema';
 import {
 	buildFileName,
 	ImportFailure,
-	ImportInvalidEntry,
 	ImportResult,
+	collectDayOneEntries,
 } from './utils';
+import moment from 'moment';
+import { UuidMapStore } from './uuid-map';
 
+/**
+ * Updates the frontmatter of existing notes based on Day One JSON entries.
+ * Unlike importJson, this function doesn't create new files, it only updates
+ * the frontmatter of existing files.
+ */
 export async function updateFrontMatter(
 	vault: Vault,
 	settings: DayOneImporterSettings,
 	fileManager: FileManager,
-	importEvents: Events
+	importEvents: Events,
+	uuidMapStore?: UuidMapStore
 ): Promise<ImportResult> {
 	try {
-		const inFile = vault.getFileByPath(
-			settings.inDirectory + '/' + settings.inFileName
+		// Use the shared utility to collect entries
+		const { allEntries, allInvalidEntries } = await collectDayOneEntries(
+			vault,
+			settings
 		);
 
-		if (!inFile) {
-			throw new Error('No file found');
+		// If no entries were found
+		if (allEntries.length === 0) {
+			return {
+				total: 0,
+				successCount: 0,
+				ignoreCount: 0,
+				failures: [],
+				invalidEntries: allInvalidEntries,
+			};
 		}
 
-		const fileData = await vault.read(inFile);
-		const parsedFileData = JSON.parse(fileData);
+		// Only handle UUID map if internal links are enabled
+		let uuidToFileName: Record<string, string> = {};
+		const useInternalLinks = settings.enableInternalLinks && !!uuidMapStore;
 
-		const validEntries: DayOneItem[] = [];
-		const invalidEntries: ImportInvalidEntry[] = [];
-
-		if (!Array.isArray(parsedFileData.entries)) {
-			throw new Error('Invalid file format');
+		if (useInternalLinks) {
+			// Load existing UUID map
+			uuidToFileName = await uuidMapStore!.read();
 		}
 
-		parsedFileData.entries.forEach((entry: unknown) => {
-			const parsedEntry = DayOneItemSchema.safeParse(entry);
-			if (parsedEntry.success) {
-				validEntries.push(parsedEntry.data);
-			} else {
-				const entryId = (entry as any)?.uuid;
-				const entryCreationDate = (entry as any)?.creationDate;
-				invalidEntries.push({
-					entryId,
-					creationDate: entryCreationDate,
-					reason: parsedEntry.error,
-				});
-				console.error(
-					`Invalid entry: ${entryId} ${entryCreationDate} - ${parsedEntry.error}`
-				);
-			}
-		});
-
+		// Process each entry and update their frontmatter
+		const fileNames = new Set();
 		let successCount = 0;
 		const ignoreCount = 0;
 		const failures: ImportFailure[] = [];
 
-		const fileNames = new Set();
-
-		let percentage = 0;
-		for (const [index, item] of validEntries.entries()) {
+		for (const [index, { item }] of allEntries.entries()) {
 			try {
-				const fileName = buildFileName(settings, item);
+				const fileName = useInternalLinks
+					? uuidToFileName[item.uuid]
+					: buildFileName(settings, item);
 
 				if (fileNames.has(fileName)) {
 					throw new Error(
@@ -69,17 +68,22 @@ export async function updateFrontMatter(
 					);
 				} else {
 					fileNames.add(fileName);
+
+					// Update the UUID mapping if internal links are enabled
+					if (useInternalLinks) {
+						uuidToFileName[item.uuid] = fileName;
+					}
+
 					const entryFile = vault.getFileByPath(
 						`${settings.outDirectory}/${fileName}`
 					);
 					if (entryFile) {
 						await writeFrontMatter(entryFile, item, settings, fileManager);
+						successCount++;
 					} else {
 						throw new Error(`Could not find file ${fileName}`);
 					}
 				}
-
-				successCount++;
 			} catch (e) {
 				console.error(e);
 				failures.push({
@@ -88,17 +92,23 @@ export async function updateFrontMatter(
 				});
 			}
 
+			// Update progress
 			const entryNumber = index + 1;
-			percentage = (entryNumber / validEntries.length) * 100;
+			const percentage = (entryNumber / allEntries.length) * 100;
 			importEvents.trigger('percentage-update', percentage);
 		}
 
+		// Persist UUID map if needed
+		if (useInternalLinks) {
+			await uuidMapStore!.write(uuidToFileName);
+		}
+
 		return {
-			total: validEntries.length + invalidEntries.length,
+			total: allEntries.length + allInvalidEntries.length,
 			successCount,
 			ignoreCount,
 			failures,
-			invalidEntries,
+			invalidEntries: allInvalidEntries,
 		};
 	} catch (err) {
 		console.error(err);
@@ -113,10 +123,12 @@ export async function writeFrontMatter(
 	fileManager: FileManager
 ) {
 	await fileManager.processFrontMatter(file, (frontMatter) => {
-		frontMatter['creationDate'] =
-			`${moment(item.creationDate).format('YYYY-MM-DD')}T${moment(item.creationDate).format('HH:mm')}`;
-		frontMatter['modifiedDate'] =
-			`${moment(item.modifiedDate).format('YYYY-MM-DD')}T${moment(item.modifiedDate).format('HH:mm')}`;
+		frontMatter['creationDate'] = moment
+			.utc(item.creationDate)
+			.format('YYYY-MM-DDTHH:mm');
+		frontMatter['modifiedDate'] = moment
+			.utc(item.modifiedDate)
+			.format('YYYY-MM-DDTHH:mm');
 		frontMatter['uuid'] = item.uuid;
 		if (item.isAllDay) {
 			frontMatter['isAllDay'] = true;
@@ -148,12 +160,9 @@ export async function writeFrontMatter(
 
 			if (item.location.latitude && item.location.longitude) {
 				if (settings.separateCoordinateFields) {
-					frontMatter['coordinates'] = undefined;
 					frontMatter['latitude'] = item.location.latitude;
 					frontMatter['longitude'] = item.location.longitude;
 				} else {
-					frontMatter['latitude'] = undefined;
-					frontMatter['longitude'] = undefined;
 					frontMatter['coordinates'] =
 						`${item.location.latitude},${item.location.longitude}`;
 				}

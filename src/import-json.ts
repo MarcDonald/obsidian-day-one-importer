@@ -1,80 +1,84 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Events, FileManager, Vault } from 'obsidian';
 import { DayOneImporterSettings } from './main';
-import { DayOneItem, DayOneItemSchema } from './schema';
+import { DayOneItem } from './schema';
 import {
 	buildFileName,
 	ImportFailure,
-	ImportInvalidEntry,
 	ImportResult,
+	collectDayOneEntries,
 } from './utils';
 import { writeFrontMatter } from './update-front-matter';
+import { resolveInternalLinks } from './utils';
+import { UuidMapStore } from './uuid-map';
 
+/**
+ * Import Day One JSON entries and create markdown notes.
+ */
 export async function importJson(
 	vault: Vault,
 	settings: DayOneImporterSettings,
 	fileManager: FileManager,
-	importEvents: Events
+	importEvents: Events,
+	uuidMapStore?: UuidMapStore
 ): Promise<ImportResult> {
 	try {
-		const file = vault.getFileByPath(
-			settings.inDirectory + '/' + settings.inFileName
+		// Use the shared utility to collect entries
+		const { allEntries, allInvalidEntries } = await collectDayOneEntries(
+			vault,
+			settings
 		);
 
-		if (!file) {
-			throw new Error('No file found');
+		// If no entries were found
+		if (allEntries.length === 0) {
+			return {
+				total: 0,
+				successCount: 0,
+				ignoreCount: 0,
+				failures: [],
+				invalidEntries: allInvalidEntries,
+			};
 		}
 
-		const fileData = await vault.read(file);
-		const parsedFileData = JSON.parse(fileData);
-		const validEntries: DayOneItem[] = [];
-		const invalidEntries: ImportInvalidEntry[] = [];
+		// Only build UUID map if internal links are enabled
+		let uuidToFileName: Record<string, string> = {};
+		const useInternalLinks = settings.enableInternalLinks && !!uuidMapStore;
 
-		if (!Array.isArray(parsedFileData.entries)) {
-			throw new Error('Invalid file format');
+		if (useInternalLinks) {
+			// Read existing UUID map
+			uuidToFileName = await uuidMapStore!.read();
+
+			// Update with new entries
+			allEntries.forEach(({ item }) => {
+				uuidToFileName[item.uuid] = buildFileName(settings, item);
+			});
 		}
 
-		parsedFileData.entries.forEach((entry: unknown) => {
-			const parsedEntry = DayOneItemSchema.safeParse(entry);
-			if (parsedEntry.success) {
-				validEntries.push(parsedEntry.data);
-			} else {
-				const entryId = (entry as any)?.uuid;
-				const entryCreationDate = (entry as any)?.creationDate;
-				invalidEntries.push({
-					entryId,
-					creationDate: entryCreationDate,
-					reason: parsedEntry.error,
-				});
-				console.error(
-					`Invalid entry: ${entryId} ${entryCreationDate} - ${parsedEntry.error}`
-				);
-			}
-		});
-
+		// Process each entry (create notes)
+		const fileNames = new Set();
 		let successCount = 0;
 		let ignoreCount = 0;
 		const failures: ImportFailure[] = [];
+		const totalEntries = allEntries.length + allInvalidEntries.length;
 
-		const fileNames = new Set();
-
-		let percentage = 0;
-		for (const [index, item] of validEntries.entries()) {
+		for (const [index, { item }] of allEntries.entries()) {
 			try {
-				const fileName = buildFileName(settings, item);
+				const outFileName = useInternalLinks
+					? uuidToFileName[item.uuid]
+					: buildFileName(settings, item);
 
-				if (fileNames.has(fileName)) {
+				if (fileNames.has(outFileName)) {
 					throw new Error(
-						`A file named ${fileName} has already been created in this import`
+						`A file named ${outFileName} has already been created in this import`
 					);
 				} else {
-					fileNames.add(fileName);
+					fileNames.add(outFileName);
 				}
 
+				// Create the actual note file
 				const file = await vault.create(
-					`${settings.outDirectory}/${fileName}`,
-					// Day One seems to export escaped full stops for some reason, so replace those with just a regular full stop
-					buildFileBody(item),
+					`${settings.outDirectory}/${outFileName}`,
+					buildFileBody(item, useInternalLinks ? uuidToFileName : {}),
 					{
 						ctime: new Date(item.creationDate).getTime(),
 						mtime: new Date(item.modifiedDate).getTime(),
@@ -82,7 +86,6 @@ export async function importJson(
 				);
 
 				await writeFrontMatter(file, item, settings, fileManager);
-
 				successCount++;
 			} catch (e) {
 				if (
@@ -98,18 +101,21 @@ export async function importJson(
 					});
 				}
 			}
+			const globalProgress = ((index + 1) / allEntries.length) * 100;
+			importEvents.trigger('percentage-update', globalProgress);
+		}
 
-			const entryNumber = index + 1;
-			percentage = (entryNumber / validEntries.length) * 100;
-			importEvents.trigger('percentage-update', percentage);
+		// Persist UUID map if needed
+		if (useInternalLinks) {
+			await uuidMapStore!.write(uuidToFileName);
 		}
 
 		return {
-			total: validEntries.length + invalidEntries.length,
+			total: totalEntries,
 			successCount,
 			ignoreCount,
 			failures,
-			invalidEntries,
+			invalidEntries: allInvalidEntries,
 		};
 	} catch (err) {
 		console.error(err);
@@ -117,67 +123,86 @@ export async function importJson(
 	}
 }
 
-function buildFileBody(item: DayOneItem): string {
-	let returned = `${(item.text as string).replace(/\\/gm, '')}`;
+function buildFileBody(
+	item: DayOneItem,
+	uuidToFileName: Record<string, string>
+): string {
+	let text = `${(item.text as string).replace(/\\/gm, '')}`;
 
 	const photoMoments = Array.from(
-		returned.matchAll(/!\[]\(dayone-moment:\/\/([^)]+)\)/g)
+		text.matchAll(/!\[]\(dayone-moment:\/\/([^)]+)\)/g)
 	);
 
 	const videoMoments = Array.from(
-		returned.matchAll(/!\[]\(dayone-moment:\/video\/([^)]+)\)/g)
+		text.matchAll(/!\[]\(dayone-moment:\/video\/([^)]+)\)/g)
 	);
 
 	const audioMoments = Array.from(
-		returned.matchAll(/!\[]\(dayone-moment:\/audio\/([^)]+)\)/g)
+		text.matchAll(/!\[]\(dayone-moment:\/audio\/([^)]+)\)/g)
 	);
 
-	const replacements = [...photoMoments, ...videoMoments, ...audioMoments].map(
-		(match) => buildMediaReplacement(item, match)
-	);
-
-	if (replacements.length > 0) {
-		replacements.forEach((replacement) => {
-			returned = returned.replace(replacement.replace, replacement.with);
-		});
-	}
-
-	return returned;
-}
-
-function buildMediaReplacement(item: DayOneItem, match: RegExpMatchArray) {
-	let mediaObj = item.photos?.find((p: any) => p.identifier === match[1]);
-
-	if (!mediaObj) {
-		mediaObj = item.videos?.find((v: any) => v.identifier === match[1]);
-	}
-
-	if (!mediaObj) {
-		const audioObj = item.audios?.find((v: any) => v.identifier === match[1]);
-		if (audioObj) {
-			mediaObj = {
-				identifier: audioObj.identifier,
-				md5: audioObj.md5,
-				// I tried a few different formats but Day One always seems to convert them to m4a
-				// May get some bug reports about this in the future if Day One isn't consistent
-				type: 'm4a',
-			};
+	// Replace the photos
+	if (photoMoments.length) {
+		for (const match of photoMoments) {
+			text = text.replace(match[0], buildMediaReplacement(item, match));
 		}
 	}
 
-	if (mediaObj) {
-		const mediaFileName = `${mediaObj.md5}.${mediaObj.type}`;
-		return {
-			replace: match[0],
-			with: `![](${mediaFileName})`,
-		};
+	// Replace the videos
+	if (videoMoments.length) {
+		for (const match of videoMoments) {
+			text = text.replace(match[0], buildMediaReplacement(item, match));
+		}
 	}
 
-	console.error(
-		`Could not find photo, video, or audio with identifier ${match[1]} in entry ${item.uuid}`
-	);
-	return {
-		replace: match[0],
-		with: match[0],
-	};
+	// Replace the audios
+	if (audioMoments.length) {
+		for (const match of audioMoments) {
+			text = text.replace(match[0], buildMediaReplacement(item, match));
+		}
+	}
+
+	// Only resolve internal links if we have a UUID map
+	return Object.keys(uuidToFileName).length > 0
+		? resolveInternalLinks(text, uuidToFileName)
+		: text;
+}
+
+function buildMediaReplacement(item: DayOneItem, match: RegExpMatchArray) {
+	// Find the photo in the item's photos array
+	let mediaId = match[1];
+
+	if (mediaId.startsWith('/')) {
+		// For videos and audios with format /audio/abc-123
+		mediaId = mediaId.substring(mediaId.lastIndexOf('/') + 1);
+	}
+
+	// Check if thumbnail image exists among photos
+	if (item.photos) {
+		const photo = item.photos.find((p) => p.identifier === mediaId);
+		if (photo) {
+			return `![](${photo.md5}.jpeg)`;
+		}
+	}
+
+	// Check for videos
+	if (item.videos) {
+		const video = item.videos.find((v) => v.identifier === mediaId);
+		if (video) {
+			// For videos, use the MD5 with mp4 extension
+			return `![](${video.md5}.mp4)`;
+		}
+	}
+
+	// Check for audios
+	if (item.audios) {
+		const audio = item.audios.find((a) => a.identifier === mediaId);
+		if (audio) {
+			// For audios, use the MD5 with m4a extension
+			return `![](${audio.md5}.m4a)`;
+		}
+	}
+
+	// If media not found, return the original match
+	return match[0];
 }

@@ -1,17 +1,15 @@
 import {
 	App,
-	moment,
 	normalizePath,
 	Notice,
 	PluginSettingTab,
 	Setting,
+	ButtonComponent,
 } from 'obsidian';
 import DayOneImporter from './main';
 import { importJson } from './import-json';
 import { updateFrontMatter } from './update-front-matter';
-import { ImportResult } from './utils';
-
-const ILLEGAL_FILENAME_CHARACTERS = ['[', ']', ':', '\\', '/', '^', '|', '#'];
+import { isIllegalFileName, ILLEGAL_FILENAME_CHARACTERS } from './utils';
 
 export class SettingsTab extends PluginSettingTab {
 	plugin: DayOneImporter;
@@ -27,23 +25,34 @@ export class SettingsTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Day One files')
-			.setDesc('Location where you extracted the zip file from Day One')
-			.addText((text) =>
-				text
-					.setPlaceholder('Directory')
+			.setName('Day One import folder')
+			.setDesc(
+				`Folder where Day One JSON exports are located.
+				All JSON files in this folder will be imported unless a specific file is set below.`
+			)
+			.addSearch((cb) => {
+				// If you have a FolderSuggest utility, use it here. Otherwise, fallback to text input.
+				cb.setPlaceholder('Example: folder1/folder2')
 					.setValue(this.plugin.settings.inDirectory)
-					.onChange(async (value) => {
-						this.plugin.settings.inDirectory = normalizePath(value);
+					.onChange(async (importFolder) => {
+						importFolder = importFolder.trim();
+						importFolder = importFolder.replace(/\/$/, '');
+						this.plugin.settings.inDirectory = importFolder;
 						await this.plugin.saveSettings();
-					})
+					});
+			});
+
+		new Setting(containerEl)
+			.setName('Import only this file (optional)')
+			.setDesc(
+				'If set, only this JSON file in the folder above will be imported.'
 			)
 			.addText((text) =>
 				text
-					.setPlaceholder('Journal JSON file')
-					.setValue(this.plugin.settings.inFileName)
+					.setPlaceholder('journal.json')
+					.setValue(this.plugin.settings.inFileName || '')
 					.onChange(async (value) => {
-						this.plugin.settings.inFileName = normalizePath(value);
+						this.plugin.settings.inFileName = value.trim();
 						await this.plugin.saveSettings();
 					})
 			);
@@ -60,6 +69,7 @@ export class SettingsTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+
 		new Setting(containerEl)
 			.setName('Ignore existing files')
 			.setDesc(
@@ -74,13 +84,50 @@ export class SettingsTab extends PluginSettingTab {
 					})
 			);
 
+		new Setting(containerEl)
+			.setName('Enable internal links resolving')
+			.setDesc(
+				'When possible, Day One internal links will resolve across multiple imported journals'
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.enableInternalLinks)
+					.onChange(async (value) => {
+						this.plugin.settings.enableInternalLinks = value;
+						await this.plugin.saveSettings();
+						if (resolveInternalLinksButton) {
+							resolveInternalLinksButton.setDisabled(!value);
+						}
+					})
+			);
+
+		// A button component to resolve links
+		let resolveInternalLinksButton: ButtonComponent;
+
+		new Setting(containerEl)
+			.setName('Resolve internal links in imported notes')
+			.setDesc(
+				'Scan all imported notes in the output folder and update internal links using the current UUID map. Only works if internal link resolving is enabled. Only notes currently in the output directory will be affected.'
+			)
+			.addButton((btn) => {
+				resolveInternalLinksButton = btn;
+				btn
+					.setButtonText('Resolve links')
+					.setDisabled(!this.plugin.settings.enableInternalLinks)
+					.onClick(async () => {
+						btn.setDisabled(true);
+						await this.plugin.resolveInternalLinksInNotes();
+						btn.setDisabled(false);
+					});
+			});
+
 		new Setting(containerEl).setName('File name').setHeading();
 
 		new Setting(containerEl)
 			.setName('Date-based file names (may cause collisions)')
 			.setDesc(
-				"Use entry's creation date as the file name. This may cause collisions and files to be overwritten if two entries have the same creation date/time." +
-					"If this option is disabled then the entry's UUID will be used as the file name. This guarantees no collisions."
+				`Use entry's creation date as the file name. This may cause collisions and files to be overwritten if two entries have the same creation date/time.
+				If this option is disabled then the entry's UUID will be used as the file name. This guarantees no collisions.`
 			)
 			.addToggle((toggle) =>
 				toggle
@@ -135,10 +182,10 @@ export class SettingsTab extends PluginSettingTab {
 					})
 			);
 
-		new Setting(containerEl).setName('FrontMatter').setHeading();
+		new Setting(containerEl).setName('Frontmatter').setHeading();
 
 		new Setting(containerEl)
-			.setName('Separate co-ordinate fields')
+			.setName('Separate coordinate fields')
 			.setDesc(
 				'If enabled then latitude and longitude will be stored in separate fields in the frontmatter, otherwise they will be combined into a single field.'
 			)
@@ -154,6 +201,7 @@ export class SettingsTab extends PluginSettingTab {
 		new Setting(containerEl).setName('Import').setHeading();
 
 		new Setting(containerEl)
+			.setName('Start the import process')
 			.addProgressBar((pb) => {
 				pb.setValue(0);
 				this.plugin.percentageUpdateRef = this.plugin.importEvents.on(
@@ -171,9 +219,10 @@ export class SettingsTab extends PluginSettingTab {
 							this.app.vault,
 							this.plugin.settings,
 							this.app.fileManager,
-							this.plugin.importEvents
+							this.plugin.importEvents,
+							this.plugin.uuidMapStore
 						);
-						await this.handleImportResult(res, 'import');
+						await this.plugin.handleImportResult(res, 'import');
 					} catch (err) {
 						new Notice(err);
 					} finally {
@@ -182,14 +231,13 @@ export class SettingsTab extends PluginSettingTab {
 				})
 			);
 
-		new Setting(containerEl).setName('Update FrontMatter').setHeading();
+		new Setting(containerEl).setName('Update Frontmatter').setHeading();
 
 		new Setting(containerEl)
-			.setName(
-				'IMPORTANT: This is a destructive operation and will overwrite any existing FrontMatter in previously imported entries.'
-			)
+			.setName('Start the frontmatter update process')
 			.setDesc(
-				'You must use the same file name settings as you did when doing the initial import.'
+				`IMPORTANT: This is a destructive operation and will overwrite any existing Frontmatter in previously imported entries.
+				You must use the same file name settings as you did when doing the initial import.`
 			);
 
 		new Setting(containerEl)
@@ -212,7 +260,7 @@ export class SettingsTab extends PluginSettingTab {
 							this.app.fileManager,
 							this.plugin.importEvents
 						);
-						await this.handleImportResult(res, 'update');
+						await this.plugin.handleImportResult(res, 'update');
 					} catch (err) {
 						new Notice(err);
 					} finally {
@@ -221,50 +269,4 @@ export class SettingsTab extends PluginSettingTab {
 				})
 			);
 	}
-
-	async handleImportResult(res: ImportResult, type: 'import' | 'update') {
-		new Notice(
-			`${type === 'import' ? 'Import' : 'Update'} results:\n` +
-				`Successful: ${res.successCount}\nFailed: ${res.failures.length}\nInvalid: ${res.invalidEntries.length}\nIgnored: ${res.ignoreCount}`
-		);
-
-		res.failures.forEach((failure) => {
-			new Notice(
-				`Entry ${failure.entry.uuid} failed to ${type}. ${failure.reason}`
-			);
-		});
-
-		let errorFileContent: string = '';
-
-		if (res.invalidEntries.length > 0) {
-			errorFileContent += res.invalidEntries
-				.map(
-					(invalidEntry) =>
-						`- ${invalidEntry.entryId} - ${moment(invalidEntry.creationDate).format('YYYY-MM-DD HH:mm:ss')}\n  - ${JSON.stringify(invalidEntry.reason)}`
-				)
-				.join('\n');
-		}
-
-		if (res.failures.length > 0) {
-			errorFileContent += res.failures
-				.map(
-					(failure) =>
-						`- ${failure.entry.uuid} - ${moment(failure.entry.creationDate).format('YYYY-MM-DD HH:mm:ss')}\n  - ${failure.reason}`
-				)
-				.join('\n');
-		}
-
-		if (errorFileContent.length > 0) {
-			await this.app.vault.create(
-				`${this.plugin.settings.outDirectory}/Failed ${type === 'import' ? 'Imports' : 'Updates'} ${moment().toDate().getTime()}.md`,
-				errorFileContent
-			);
-		}
-	}
-}
-
-function isIllegalFileName(fileName: string): boolean {
-	return ILLEGAL_FILENAME_CHARACTERS.some((illegal) =>
-		fileName.contains(illegal)
-	);
 }

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { importJson } from '../src/import-json';
 import { DEFAULT_SETTINGS } from '../src/main';
-import { Events, FileManager, TFile, Vault } from 'obsidian';
+import { Events, FileManager, TFile, TFolder, Vault } from 'obsidian';
 import {
 	afterEach,
 	beforeEach,
@@ -13,6 +13,21 @@ import {
 import * as testData from './__test_data__/day-one-in/Dev Journal.json';
 import * as testDataWithInvalidEntry from './__test_data__/day-one-in/Dev Journal One Invalid.json';
 import { ZodError } from 'zod';
+import { UuidMapStore } from '../src/uuid-map';
+
+jest.mock('obsidian', () => {
+	const actual = jest.requireActual('obsidian');
+	return Object.assign({}, actual, {
+		Notice: jest.fn(),
+	});
+});
+
+const fakeJsonFile = {
+	name: 'fakeFile.json',
+	extension: 'json',
+	basename: 'fakeFile',
+	stat: {},
+} as unknown as TFile;
 
 const mockEntry = {
 	creationDevice: 'marcBook Pro',
@@ -39,9 +54,11 @@ describe('importJson', () => {
 	let fileManager: jest.Mocked<FileManager>;
 	let importEvents: jest.Mocked<Events>;
 	let frontmatterObjs: any[] = [];
+	let mockUuidMapStore: UuidMapStore;
 
 	beforeEach(() => {
 		vault = {
+			getAbstractFileByPath: jest.fn(),
 			getFileByPath: jest.fn(),
 			read: jest.fn(),
 			create: jest.fn(),
@@ -57,6 +74,10 @@ describe('importJson', () => {
 		importEvents = {
 			trigger: jest.fn(),
 		} as unknown as jest.Mocked<Events>;
+		mockUuidMapStore = {
+			read: jest.fn(async () => ({})),
+			write: jest.fn(async (_map: Record<string, string>) => {}),
+		};
 	});
 
 	afterEach(() => {
@@ -64,7 +85,28 @@ describe('importJson', () => {
 		frontmatterObjs = [];
 	});
 
+	test('should error if input directory is not found', () => {
+		vault.getAbstractFileByPath.mockReturnValue(null); // Simulate missing folder
+		expect(() =>
+			importJson(
+				vault,
+				{
+					...DEFAULT_SETTINGS,
+					inDirectory: 'testDir',
+					inFileName: 'testInput.json',
+				},
+				fileManager,
+				importEvents,
+				mockUuidMapStore
+			)
+		).rejects.toThrowError('Input directory does not exist.');
+	});
+
 	test('should error if no input file', () => {
+		vault.getAbstractFileByPath.mockImplementation((path: string) => {
+			if (path === 'testDir') return { children: [] } as unknown as TFolder;
+			return null;
+		});
 		vault.getFileByPath.mockReturnValue(null);
 
 		expect(() =>
@@ -76,13 +118,29 @@ describe('importJson', () => {
 					inFileName: 'testInput.json',
 				},
 				fileManager,
-				importEvents
+				importEvents,
+				mockUuidMapStore
 			)
-		).rejects.toThrowError('No file found');
-		expect(vault.getFileByPath).toBeCalledWith('testDir/testInput.json');
+		).rejects.toThrowError(
+			'File testInput.json does not exist in the input directory.'
+		);
+
+		// Behavioral check
+		expect(vault.getAbstractFileByPath).toBeCalledWith(
+			'testDir/testInput.json'
+		);
 	});
 
 	test('should error if file name has already been used in this import', async () => {
+		vault.getAbstractFileByPath.mockImplementation((path: string) => {
+			if (path === 'testDir') {
+				return { children: [fakeJsonFile] } as unknown as TFolder;
+			}
+			if (path === 'testDir/fakeFile.json') {
+				return fakeJsonFile;
+			}
+			return null;
+		});
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(
 			JSON.stringify({
@@ -101,9 +159,14 @@ describe('importJson', () => {
 
 		const res = await importJson(
 			vault,
-			DEFAULT_SETTINGS,
+			{
+				...DEFAULT_SETTINGS,
+				inDirectory: 'testDir',
+				inFileName: 'fakeFile.json',
+			},
 			fileManager,
-			importEvents
+			importEvents,
+			mockUuidMapStore
 		);
 		expect(res.failures).toHaveLength(1);
 		expect(res.failures[0].entry.uuid).toBe('abc123');
@@ -113,6 +176,15 @@ describe('importJson', () => {
 	});
 
 	test('should ignore if file already exists and settings.ignoreExistingFiles is true', async () => {
+		vault.getAbstractFileByPath.mockImplementation((path: string) => {
+			if (path === 'day-one-in') {
+				return { children: [fakeJsonFile] } as unknown as TFolder;
+			}
+			if (path === 'day-one-in/journal.json') {
+				return fakeJsonFile;
+			}
+			return null;
+		});
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(
 			JSON.stringify({
@@ -133,7 +205,8 @@ describe('importJson', () => {
 				ignoreExistingFiles: true,
 			},
 			fileManager,
-			importEvents
+			importEvents,
+			mockUuidMapStore
 		);
 		expect(res.successCount).toBe(0);
 		expect(res.failures).toHaveLength(0);
@@ -141,6 +214,15 @@ describe('importJson', () => {
 	});
 
 	test('should error if file already exists and settings.ignoreExistingFiles is false', async () => {
+		vault.getAbstractFileByPath.mockImplementation((path: string) => {
+			if (path === 'day-one-in') {
+				return { children: [fakeJsonFile] } as unknown as TFolder;
+			}
+			if (path === 'day-one-in/journal.json') {
+				return fakeJsonFile;
+			}
+			return null;
+		});
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(
 			JSON.stringify({
@@ -161,7 +243,8 @@ describe('importJson', () => {
 				ignoreExistingFiles: false,
 			},
 			fileManager,
-			importEvents
+			importEvents,
+			mockUuidMapStore
 		);
 		expect(res.successCount).toBe(0);
 		expect(res.failures).toHaveLength(1);
@@ -169,6 +252,15 @@ describe('importJson', () => {
 	});
 
 	test('should use provided date format to name files when date-based naming is enabled', async () => {
+		vault.getAbstractFileByPath.mockImplementation((path: string) => {
+			if (path === 'day-one-in') {
+				return { children: [fakeJsonFile] } as unknown as TFolder;
+			}
+			if (path === 'day-one-in/journal.json') {
+				return fakeJsonFile;
+			}
+			return null;
+		});
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(
 			JSON.stringify({
@@ -180,6 +272,7 @@ describe('importJson', () => {
 					{
 						...mockEntry,
 						creationDate: '2023-03-11T11:15:33Z',
+						uuid: '959E7A13B3B649D681DC573DB7E07968',
 						isAllDay: true,
 					},
 				],
@@ -195,9 +288,11 @@ describe('importJson', () => {
 				dateBasedAllDayFileNameFormat: 'SssmmHHDDMMYYYY',
 			},
 			fileManager,
-			importEvents
+			importEvents,
+			mockUuidMapStore
 		);
 
+		expect(vault.create.mock.calls.length).toBe(2);
 		expect(vault.create.mock.calls[0][0]).toBe(
 			'day-one-out/202404192155530.md'
 		);
@@ -207,6 +302,15 @@ describe('importJson', () => {
 	});
 
 	test('should gracefully handle empty userActivity object', async () => {
+		vault.getAbstractFileByPath.mockImplementation((path: string) => {
+			if (path === 'day-one-in') {
+				return { children: [fakeJsonFile] } as unknown as TFolder;
+			}
+			if (path === 'day-one-in/journal.json') {
+				return fakeJsonFile;
+			}
+			return null;
+		});
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(
 			JSON.stringify({
@@ -219,13 +323,28 @@ describe('importJson', () => {
 			})
 		);
 
-		await importJson(vault, DEFAULT_SETTINGS, fileManager, importEvents);
+		await importJson(
+			vault,
+			DEFAULT_SETTINGS,
+			fileManager,
+			importEvents,
+			mockUuidMapStore
+		);
 
 		// Testing that it does not fail schema validation
 		expect(vault.create.mock.calls[0][1]).toBe('testing 123');
 	});
 
 	test('should use UUID as file name when date-based naming is not enabled', async () => {
+		vault.getAbstractFileByPath.mockImplementation((path: string) => {
+			if (path === 'day-one-in') {
+				return { children: [fakeJsonFile] } as unknown as TFolder;
+			}
+			if (path === 'day-one-in/journal.json') {
+				return fakeJsonFile;
+			}
+			return null;
+		});
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(
 			JSON.stringify({
@@ -252,7 +371,8 @@ describe('importJson', () => {
 				dateBasedFileNames: false,
 			},
 			fileManager,
-			importEvents
+			importEvents,
+			mockUuidMapStore
 		);
 
 		expect(vault.create.mock.calls[0][0]).toBe('day-one-out/abc123.md');
@@ -260,6 +380,15 @@ describe('importJson', () => {
 	});
 
 	test('should replace images or videos or audios', async () => {
+		vault.getAbstractFileByPath.mockImplementation((path: string) => {
+			if (path === 'day-one-in') {
+				return { children: [fakeJsonFile] } as unknown as TFolder;
+			}
+			if (path === 'day-one-in/journal.json') {
+				return fakeJsonFile;
+			}
+			return null;
+		});
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(
 			JSON.stringify({
@@ -357,7 +486,13 @@ describe('importJson', () => {
 			})
 		);
 
-		await importJson(vault, DEFAULT_SETTINGS, fileManager, importEvents);
+		await importJson(
+			vault,
+			DEFAULT_SETTINGS,
+			fileManager,
+			importEvents,
+			mockUuidMapStore
+		);
 
 		expect(vault.create.mock.calls[0][1]).toBe(
 			'![](d500d6789ff2c211af3f507b17be8e66.mp4)\n' +
@@ -371,6 +506,15 @@ describe('importJson', () => {
 	});
 
 	test('should not replace images or videos that are not found', async () => {
+		vault.getAbstractFileByPath.mockImplementation((path: string) => {
+			if (path === 'day-one-in') {
+				return { children: [fakeJsonFile] } as unknown as TFolder;
+			}
+			if (path === 'day-one-in/journal.json') {
+				return fakeJsonFile;
+			}
+			return null;
+		});
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(
 			JSON.stringify({
@@ -385,7 +529,13 @@ describe('importJson', () => {
 			})
 		);
 
-		await importJson(vault, DEFAULT_SETTINGS, fileManager, importEvents);
+		await importJson(
+			vault,
+			DEFAULT_SETTINGS,
+			fileManager,
+			importEvents,
+			mockUuidMapStore
+		);
 
 		expect(vault.create.mock.calls[0][1]).toBe(
 			'![](dayone-moment:/video/6F9B2DC7EADE4242A80DC76470D2264E)\n' +
@@ -398,6 +548,15 @@ describe('importJson', () => {
 	});
 
 	test('full import', async () => {
+		vault.getAbstractFileByPath.mockImplementation((path: string) => {
+			if (path === 'day-one-in') {
+				return { children: [fakeJsonFile] } as unknown as TFolder;
+			}
+			if (path === 'day-one-in/journal.json') {
+				return fakeJsonFile;
+			}
+			return null;
+		});
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(JSON.stringify(testData));
 
@@ -405,7 +564,8 @@ describe('importJson', () => {
 			vault,
 			DEFAULT_SETTINGS,
 			fileManager,
-			importEvents
+			importEvents,
+			mockUuidMapStore
 		);
 
 		// Returned object
@@ -453,7 +613,7 @@ describe('importJson', () => {
 			uuid: 'DF8B32A3FE25400BBBB3A7BBFCD23CE7',
 			isAllDay: true,
 			location: 'Eurpocar Dublin Airport Terminal 2, Swords, Ireland',
-			coordinates: `53.4276123046875,-6.239171028137207`,
+			coordinates: `53.42761,-6.23917`,
 			modifiedDate: '2024-04-19T21:55',
 			starred: true,
 			tags: ['another-dev-testing-tag', 'dev-testing-tag'],
@@ -495,7 +655,7 @@ describe('importJson', () => {
 		expect(frontmatterObjs[2]).toEqual({
 			creationDate: '2024-04-19T21:48',
 			location: 'Dundas Castle, Edinburgh, United Kingdom',
-			coordinates: `55.97501754760742,-3.4143447875976562`,
+			coordinates: `55.97502,-3.41434`,
 			modifiedDate: '2024-04-19T21:48',
 			pinned: true,
 			uuid: '876E72B228F847379F296B1698CA3F61',
@@ -518,7 +678,7 @@ describe('importJson', () => {
 			location: 'London Eye, London, United Kingdom',
 			modifiedDate: '2024-04-19T21:57',
 			uuid: '479270F4CAD1429AB1564DB34D0FE337',
-			coordinates: `51.503360748291016,-0.11951349675655365`,
+			coordinates: `51.50336,-0.11951`,
 		});
 
 		expect(importEvents.trigger).toHaveBeenNthCalledWith(
@@ -549,6 +709,15 @@ describe('importJson', () => {
 	});
 
 	test('full import with invalid entries', async () => {
+		vault.getAbstractFileByPath.mockImplementation((path: string) => {
+			if (path === 'day-one-in') {
+				return { children: [fakeJsonFile] } as unknown as TFolder;
+			}
+			if (path === 'day-one-in/journal.json') {
+				return fakeJsonFile;
+			}
+			return null;
+		});
 		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
 		vault.read.mockResolvedValue(JSON.stringify(testDataWithInvalidEntry));
 
@@ -556,7 +725,8 @@ describe('importJson', () => {
 			vault,
 			DEFAULT_SETTINGS,
 			fileManager,
-			importEvents
+			importEvents,
+			mockUuidMapStore
 		);
 
 		// Returned object
@@ -618,7 +788,7 @@ describe('importJson', () => {
 			uuid: 'DF8B32A3FE25400BBBB3A7BBFCD23CE7',
 			isAllDay: true,
 			location: 'Eurpocar Dublin Airport Terminal 2, Swords, Ireland',
-			coordinates: `53.4276123046875,-6.239171028137207`,
+			coordinates: `53.42761,-6.23917`,
 			modifiedDate: '2024-04-19T21:55',
 			starred: true,
 			tags: ['another-dev-testing-tag', 'dev-testing-tag'],
@@ -660,7 +830,7 @@ describe('importJson', () => {
 		expect(frontmatterObjs[2]).toEqual({
 			creationDate: '2024-04-19T21:48',
 			location: 'Dundas Castle, Edinburgh, United Kingdom',
-			coordinates: `55.97501754760742,-3.4143447875976562`,
+			coordinates: `55.97502,-3.41434`,
 			modifiedDate: '2024-04-19T21:48',
 			pinned: true,
 			uuid: '876E72B228F847379F296B1698CA3F61',
@@ -683,7 +853,7 @@ describe('importJson', () => {
 			location: 'London Eye, London, United Kingdom',
 			modifiedDate: '2024-04-19T21:57',
 			uuid: '479270F4CAD1429AB1564DB34D0FE337',
-			coordinates: `51.503360748291016,-0.11951349675655365`,
+			coordinates: `51.50336,-0.11951`,
 		});
 
 		expect(importEvents.trigger).toHaveBeenNthCalledWith(

@@ -6,7 +6,11 @@ export const DayOneItemSchema = z.object({
 	isAllDay: z.boolean().optional(),
 	isPinned: z.boolean().optional(),
 	starred: z.boolean().optional(),
-	tags: z.array(z.string()).optional(),
+	tags: z
+		.array(
+			z.string().transform((tag) => tag.replace(/\s+/g, '-').toLowerCase())
+		)
+		.optional(),
 	text: z.string().default(''),
 	userActivity: z
 		.object({
@@ -18,8 +22,8 @@ export const DayOneItemSchema = z.object({
 			localityName: z.string().optional(),
 			country: z.string().optional(),
 			placeName: z.string().optional(),
-			latitude: z.number(),
-			longitude: z.number(),
+			latitude: z.number().transform((val) => Number(val.toFixed(5))),
+			longitude: z.number().transform((val) => Number(val.toFixed(5))),
 		})
 		.optional(),
 	uuid: z.string(),
