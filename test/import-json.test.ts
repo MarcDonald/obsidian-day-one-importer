@@ -54,7 +54,7 @@ describe('importJson', () => {
 	let fileManager: jest.Mocked<FileManager>;
 	let importEvents: jest.Mocked<Events>;
 	let frontmatterObjs: any[] = [];
-	let mockUuidMapStore: UuidMapStore;
+	let mockUuidMapStore: jest.Mocked<UuidMapStore>;
 
 	beforeEach(() => {
 		vault = {
@@ -75,9 +75,13 @@ describe('importJson', () => {
 			trigger: jest.fn(),
 		} as unknown as jest.Mocked<Events>;
 		mockUuidMapStore = {
-			read: jest.fn(async () => ({})),
-			write: jest.fn(async (_map: Record<string, string>) => {}),
-		};
+			read: jest
+				.fn<() => Promise<Record<string, string>>>()
+				.mockResolvedValue({}),
+			write: jest
+				.fn<(map: Record<string, string>) => Promise<void>>()
+				.mockResolvedValue(undefined),
+		} as jest.Mocked<UuidMapStore>;
 	});
 
 	afterEach(() => {
@@ -881,5 +885,132 @@ describe('importJson', () => {
 			'percentage-update',
 			100
 		);
+	});
+
+	test('should update UUID map when enableInternalLinks is true', async () => {
+		// Clear mocks before running this test
+		jest.clearAllMocks();
+
+		// Reset the mock implementations
+		mockUuidMapStore.read.mockReset();
+		mockUuidMapStore.write.mockReset();
+
+		vault.getAbstractFileByPath.mockImplementation((path: string) => {
+			if (path === 'day-one-in') {
+				return { children: [fakeJsonFile] } as unknown as TFolder;
+			}
+			if (path === 'day-one-in/fakeFile.json') {
+				return fakeJsonFile;
+			}
+			return null;
+		});
+
+		// Simulate the vault.create behavior
+		vault.create.mockImplementation(() => Promise.resolve({} as TFile));
+		vault.read.mockResolvedValue(
+			JSON.stringify({
+				entries: [
+					{
+						...mockEntry,
+						uuid: 'abc123',
+					},
+					{
+						...mockEntry,
+						uuid: 'def456',
+					},
+				],
+			})
+		);
+
+		// Simulate an existing UUID map
+		const existingUuidMap = {
+			'existing-uuid': 'old-file.md',
+		};
+		mockUuidMapStore.read.mockResolvedValue(existingUuidMap);
+
+		await importJson(
+			vault,
+			{
+				...DEFAULT_SETTINGS,
+				inDirectory: 'day-one-in',
+				inFileName: 'fakeFile.json',
+				enableInternalLinks: true, // Enable internal links
+			},
+			fileManager,
+			importEvents,
+			mockUuidMapStore
+		);
+
+		// Verify that read was called
+		expect(mockUuidMapStore.read).toHaveBeenCalled();
+
+		// Verify that write was called
+		expect(mockUuidMapStore.write).toHaveBeenCalled();
+
+		// Verify the map was updated with our entries
+		// Get the first argument of the first call to write
+		const updatedMap = mockUuidMapStore.write.mock.calls[0][0];
+
+		// Verify that the existing entry was preserved
+		expect(updatedMap['existing-uuid']).toBe('old-file.md');
+
+		// Verify that both new UUIDs were added to the map
+		expect(updatedMap).toHaveProperty('abc123');
+		expect(updatedMap).toHaveProperty('def456');
+	});
+
+	test('should NOT update UUID map when enableInternalLinks is false', async () => {
+		// Clear mocks before running this test
+		jest.clearAllMocks();
+
+		// Reset the mock implementations
+		mockUuidMapStore.read.mockReset();
+		mockUuidMapStore.write.mockReset();
+
+		vault.getAbstractFileByPath.mockImplementation((path: string) => {
+			if (path === 'day-one-in') {
+				return { children: [fakeJsonFile] } as unknown as TFolder;
+			}
+			if (path === 'day-one-in/fakeFile.json') {
+				return fakeJsonFile;
+			}
+			return null;
+		});
+
+		// Simulate the vault.create behavior
+		vault.create.mockImplementation(() => Promise.resolve({} as TFile));
+		vault.read.mockResolvedValue(
+			JSON.stringify({
+				entries: [
+					{
+						...mockEntry,
+						uuid: 'abc123',
+					},
+					{
+						...mockEntry,
+						uuid: 'def456',
+					},
+				],
+			})
+		);
+
+		await importJson(
+			vault,
+			{
+				...DEFAULT_SETTINGS,
+				inDirectory: 'day-one-in',
+				inFileName: 'fakeFile.json',
+				enableInternalLinks: false, // Disable internal links
+			},
+			fileManager,
+			importEvents,
+			mockUuidMapStore
+		);
+
+		// Verify that read was not called
+		expect(mockUuidMapStore.read).not.toHaveBeenCalled();
+
+		// Verify that write was not called
+		expect(mockUuidMapStore.write).not.toHaveBeenCalled();
 	});
 });
