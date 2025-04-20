@@ -45,8 +45,13 @@ export async function importJson(
 		const useInternalLinks = settings.enableInternalLinks && !!uuidMapStore;
 
 		if (useInternalLinks) {
-			// Read existing UUID map
-			uuidToFileName = await uuidMapStore!.read();
+			try {
+				// Try to read an existing UUID map
+				uuidToFileName = await uuidMapStore!.read();
+			} catch (e) {
+				uuidToFileName = {};
+				console.log('Failed to read UUID map, starting with an empty map.');
+			}
 
 			// Update with new entries
 			allEntries.forEach(({ item }) => {
@@ -164,7 +169,7 @@ function buildFileBody(
 
 	// Only resolve internal links if we have a UUID map
 	return Object.keys(uuidToFileName).length > 0
-		? resolveInternalLinks(text, uuidToFileName)
+		? resolveInternalLinks(text, uuidToFileName).text
 		: text;
 }
 
