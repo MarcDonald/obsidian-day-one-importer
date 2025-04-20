@@ -79,12 +79,31 @@ export default class DayOneImporter extends Plugin {
 		const notes = folder.children.filter(
 			(f) => f instanceof TFile && f.extension === 'md'
 		) as TFile[];
+
+		let totalResolvedLinks = 0;
+		let totalLinks = 0;
+		let updatedNotes = 0;
+
 		for (const note of notes) {
 			const content = await this.app.vault.cachedRead(note);
-			const updated = resolveInternalLinks(content, uuidMap);
-			if (updated !== content) {
-				await this.app.vault.modify(note, updated);
+			const result = resolveInternalLinks(content, uuidMap);
+
+			if (result.text !== content) {
+				await this.app.vault.modify(note, result.text);
+				updatedNotes++;
 			}
+
+			totalResolvedLinks += result.resolvedCount;
+			totalLinks += result.totalCount;
+		}
+
+		// Display a summary notice
+		if (totalLinks > 0) {
+			new Notice(
+				`Resolved ${totalResolvedLinks} out of ${totalLinks} internal links across ${updatedNotes} notes.`
+			);
+		} else {
+			new Notice('No Day One internal links found in any notes.');
 		}
 	}
 

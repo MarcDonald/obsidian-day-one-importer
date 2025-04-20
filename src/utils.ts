@@ -59,18 +59,29 @@ export function isIllegalFileName(fileName: string): boolean {
 
 /**
  * Utility for resolving Day One internal links to Obsidian wiki-links using a UUID-to-filename map.
+ * Returns the updated text along with statistics about how many links were resolved.
  */
 export function resolveInternalLinks(
 	text: string,
 	uuidToFileName: Record<string, string>
-): string {
-	return text.replace(
+): { text: string; resolvedCount: number; totalCount: number } {
+	let resolvedCount = 0;
+	let totalCount = 0;
+
+	const updatedText = text.replace(
 		/\[([^\]]+)\]\(dayone:\/\/view\?entryId=([A-F0-9]+)\)/g,
 		(match, linkText, uuid) => {
+			totalCount++;
 			const fileName = uuidToFileName[uuid];
-			return fileName ? `[[${fileName}|${linkText}]]` : match;
+			if (fileName) {
+				resolvedCount++;
+				return `[[${fileName}|${linkText}]]`;
+			}
+			return match;
 		}
 	);
+
+	return { text: updatedText, resolvedCount, totalCount };
 }
 
 /**
