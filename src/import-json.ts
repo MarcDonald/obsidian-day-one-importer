@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Events, FileManager, Vault } from 'obsidian';
 import { DayOneImporterSettings } from './main';
-import { DayOneItem, DayOneItemSchema } from './schema';
+import { DayOneItem, DayOneItemSchema, MediaObject } from './schema';
 import {
 	buildFileName,
 	ImportFailure,
@@ -132,9 +132,16 @@ function buildFileBody(item: DayOneItem): string {
 		returned.matchAll(/!\[]\(dayone-moment:\/audio\/([^)]+)\)/g)
 	);
 
-	const replacements = [...photoMoments, ...videoMoments, ...audioMoments].map(
-		(match) => buildMediaReplacement(item, match)
+	const pdfMoments = Array.from(
+		returned.matchAll(/!\[]\(dayone-moment:\/pdfAttachment\/([^)]+)\)/g)
 	);
+
+	const replacements = [
+		...photoMoments,
+		...videoMoments,
+		...audioMoments,
+		...pdfMoments,
+	].map((match) => buildMediaReplacement(item, match));
 
 	if (replacements.length > 0) {
 		replacements.forEach((replacement) => {
@@ -146,36 +153,54 @@ function buildFileBody(item: DayOneItem): string {
 }
 
 function buildMediaReplacement(item: DayOneItem, match: RegExpMatchArray) {
-	let mediaObj = item.photos?.find((p: any) => p.identifier === match[1]);
+	// Define media collections with optional custom transform for audio
+	// Audio files:
+	// 	I tried a few different formats but Day One always seems to convert them to m4a
+	// 	May get some bug reports about this in the future if Day One isn't consistent
+	const mediaTypes: Array<{
+		collection?: MediaObject[];
+		fn?: (m: MediaObject) => MediaObject;
+	}> = [
+		{ collection: item.photos },
+		{ collection: item.videos },
+		{ collection: item.pdfAttachments },
+		{
+			collection: item.audios,
+			fn: (audio: MediaObject) => ({ ...audio, type: 'm4a' }),
+		},
+	];
 
-	if (!mediaObj) {
-		mediaObj = item.videos?.find((v: any) => v.identifier === match[1]);
-	}
+	// Find the media object in any of the collections
+	let mediaObj: MediaObject | null = null;
+	for (const { collection, fn = (media: MediaObject) => media } of mediaTypes) {
+		if (!collection) continue;
 
-	if (!mediaObj) {
-		const audioObj = item.audios?.find((v: any) => v.identifier === match[1]);
-		if (audioObj) {
-			mediaObj = {
-				identifier: audioObj.identifier,
-				md5: audioObj.md5,
-				// I tried a few different formats but Day One always seems to convert them to m4a
-				// May get some bug reports about this in the future if Day One isn't consistent
-				type: 'm4a',
-			};
+		const found = collection.find((media) => media.identifier === match[1]);
+		console.log(`Found media with identifier ${found?.identifier}`);
+		if (found) {
+			mediaObj = fn(found);
+			break;
 		}
 	}
 
+	// Create markdown link if media was found
 	if (mediaObj) {
-		const mediaFileName = `${mediaObj.md5}.${mediaObj.type}`;
+		// Ensure we have a type value, default to extension-less format if not provided
+		const mediaFileName = mediaObj.type
+			? `${mediaObj.md5}.${mediaObj.type}`
+			: mediaObj.md5;
+
 		return {
 			replace: match[0],
 			with: `![](${mediaFileName})`,
 		};
 	}
 
+	// Log error and return unchanged if no media found
 	console.error(
-		`Could not find photo, video, or audio with identifier ${match[1]} in entry ${item.uuid}`
+		`Could not find media with identifier ${match[1]} in entry ${item.uuid}`
 	);
+
 	return {
 		replace: match[0],
 		with: match[0],
