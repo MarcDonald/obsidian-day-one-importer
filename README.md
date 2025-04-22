@@ -42,11 +42,12 @@ Easily convert your Day One journals into Obsidian markdown.
 - Text entries
 - Rich text
 - Date-based file names or UUID file names
-- Inline images and videos
+- Attachments: photos, videos, PDFs, audios
+- Day One internal links can be converted to Obsidian links
 
 #### Added to frontmatter
 
-- Tags
+- Tags (with configurable tag styles, e.g. `camelCase`, `snake_case`)
 - If entry is starred
 - If entry is pinned
 - If entry is "all day"
