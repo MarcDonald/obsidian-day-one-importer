@@ -12,6 +12,7 @@ import {
 } from '@jest/globals';
 import * as testData from './__test_data__/day-one-in/Dev Journal.json';
 import * as testDataWithInvalidEntry from './__test_data__/day-one-in/Dev Journal One Invalid.json';
+import * as testDataWithPDF from './__test_data__/day-one-in/PDF.json';
 import { ZodError } from 'zod';
 
 const mockEntry = {
@@ -710,6 +711,35 @@ describe('importJson', () => {
 			5,
 			'percentage-update',
 			100
+		);
+	});
+
+	test('single entry impport with PDF attachment', async () => {
+		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
+		vault.read.mockResolvedValue(JSON.stringify(testDataWithPDF));
+
+		const result = await importJson(
+			vault,
+			DEFAULT_SETTINGS,
+			fileManager,
+			importEvents
+		);
+
+		// Returned object
+		expect(result).toEqual({
+			total: 1,
+			successCount: 1,
+			ignoreCount: 0,
+			failures: [],
+			invalidEntries: [],
+		});
+
+		// Test the imported entry
+		expect(vault.create.mock.calls[0][0]).toBe(
+			'day-one-out/257CF009978A4312A3D1D8EFEDE7859C.md'
+		);
+		expect(vault.create.mock.calls[0][1]).toMatch(
+			'df4233a9b96c90e84c44d766f99fc12c.pdf'
 		);
 	});
 });

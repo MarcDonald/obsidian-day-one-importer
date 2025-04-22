@@ -1,0 +1,40 @@
+{
+	"metadata": {
+		"version": "1.0"
+	},
+	"entries": [
+		{
+			"timeZone": "Europe\/Rome",
+			"creationDevice": "Athos",
+			"creationOSName": "macOS",
+			"text": "# A test entry\n\nThis is a test entry with a PDF document attached\\.\n\n![](dayone-moment:\/pdfAttachment\/A713232D62364FC2B53C2118E00E653C)",
+			"editingTime": 29.375388979911804,
+			"duration": 0,
+			"isAllDay": false,
+			"uuid": "257CF009978A4312A3D1D8EFEDE7859C",
+			"creationDeviceType": "MacBook Pro",
+			"starred": false,
+			"modifiedDate": "2025-04-21T19:28:34Z",
+			"creationOSVersion": "15.4.1",
+			"creationDeviceModel": "Mac14,9",
+			"isPinned": false,
+			"richText": "{\"contents\":[{\"attributes\":{\"line\":{\"header\":1,\"identifier\":\"133730CC-AF9E-41C8-847A-DEF7C1242C52\"}},\"text\":\"A test entry\\n\"},{\"attributes\":{\"line\":{\"header\":0,\"identifier\":\"01650420-2320-46DC-955B-96A8BB0D859A\"}},\"text\":\"\\n\"},{\"text\":\"This is a test entry with a PDF document attached.\"},{\"embeddedObjects\":[{\"identifier\":\"A713232D62364FC2B53C2118E00E653C\",\"type\":\"pdfAttachment\"}]}],\"meta\":{\"created\":{\"platform\":\"com.bloombuilt.dayone-mac\",\"version\":1655},\"small-lines-removed\":true,\"version\":1}}",
+			"creationDate": "2025-04-01T20:55:27Z",
+			"pdfAttachments": [
+				{
+					"favorite": false,
+					"fileSize": 396822,
+					"orderInEntry": 0,
+					"width": 0,
+					"type": "pdf",
+					"identifier": "A713232D62364FC2B53C2118E00E653C",
+					"creationDevice": "Athos",
+					"height": 0,
+					"duration": 0,
+					"md5": "df4233a9b96c90e84c44d766f99fc12c",
+					"pdfName": "Monty Hall uniform"
+				}
+			]
+		}
+	]
+}
