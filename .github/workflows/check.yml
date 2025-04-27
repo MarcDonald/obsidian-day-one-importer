@@ -1,9 +1,13 @@
 name: Check Commit
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - '*'
+  pull_request:
+    branches:
+      - main
 
 jobs:
   check-commit:
