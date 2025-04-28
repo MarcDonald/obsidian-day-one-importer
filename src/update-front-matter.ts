@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Events, FileManager, moment, TFile, Vault } from 'obsidian';
+import { Events, FileManager, TFile, Vault } from 'obsidian';
 import { DayOneImporterSettings } from './main';
 import { DayOneItem, DayOneItemSchema } from './schema';
 import {
@@ -8,6 +8,7 @@ import {
 	ImportInvalidEntry,
 	ImportResult,
 } from './utils';
+import moment from 'moment';
 
 export async function updateFrontMatter(
 	vault: Vault,

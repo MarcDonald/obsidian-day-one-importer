@@ -1,5 +1,13 @@
 import { z } from 'zod';
 
+export const MediaObjectSchema = z.object({
+	identifier: z.string(),
+	md5: z.string(),
+	type: z.string().optional(),
+});
+
+export type MediaObject = z.infer<typeof MediaObjectSchema>;
+
 export const DayOneItemSchema = z.object({
 	modifiedDate: z.string().datetime(),
 	creationDate: z.string().datetime(),
@@ -23,32 +31,10 @@ export const DayOneItemSchema = z.object({
 		})
 		.optional(),
 	uuid: z.string(),
-	photos: z
-		.array(
-			z.object({
-				type: z.string(),
-				identifier: z.string(),
-				md5: z.string(),
-			})
-		)
-		.optional(),
-	videos: z
-		.array(
-			z.object({
-				type: z.string(),
-				identifier: z.string(),
-				md5: z.string(),
-			})
-		)
-		.optional(),
-	audios: z
-		.array(
-			z.object({
-				identifier: z.string(),
-				md5: z.string(),
-			})
-		)
-		.optional(),
+	photos: z.array(MediaObjectSchema).optional(),
+	videos: z.array(MediaObjectSchema).optional(),
+	audios: z.array(MediaObjectSchema).optional(),
+	pdfAttachments: z.array(MediaObjectSchema).optional(),
 });
 
 export type DayOneItem = z.infer<typeof DayOneItemSchema>;
