@@ -11,9 +11,6 @@ import { importJson } from './import-json';
 import { updateFrontMatter } from './update-front-matter';
 import { ImportResult } from './utils';
 
-// square brackets are also illegal filename characters,
-// however moment uses those for escaping strings
-// so they are excluded from this list
 const ILLEGAL_FILENAME_CHARACTERS_FOR_DATE_FORMATTING = [
 	':',
 	'\\',
@@ -21,7 +18,15 @@ const ILLEGAL_FILENAME_CHARACTERS_FOR_DATE_FORMATTING = [
 	'^',
 	'|',
 	'#',
+	// single square brackets are illegal filename characters,
+	// however moment uses them for escaping
+	// so two square brackets next to each other get escaped down to one
+	// which is illegal, whereas a single square bracket will be escaped completely
+	// and not be included in the filename
+	'[[',
+	']]',
 ];
+const UNPAIRED_SQUARE_BRACKET_REGEX = new RegExp('(\\[[^\\]]*$)|(^[^\\[]*])');
 
 export class SettingsTab extends PluginSettingTab {
 	plugin: DayOneImporter;
@@ -111,7 +116,7 @@ export class SettingsTab extends PluginSettingTab {
 						if (value !== '') {
 							if (isIllegalFileName(value)) {
 								new Notice(
-									`File name cannot contain any of the following characters: ${ILLEGAL_FILENAME_CHARACTERS_FOR_DATE_FORMATTING.join('')}`
+									`File name cannot contain any of the following characters: ${ILLEGAL_FILENAME_CHARACTERS_FOR_DATE_FORMATTING.join('')} or unpaired square brackets`
 								);
 							} else {
 								this.plugin.settings.dateBasedFileNameFormat =
@@ -134,7 +139,7 @@ export class SettingsTab extends PluginSettingTab {
 						if (value !== '') {
 							if (isIllegalFileName(value)) {
 								new Notice(
-									`File name cannot contain any of the following characters: ${ILLEGAL_FILENAME_CHARACTERS_FOR_DATE_FORMATTING.join('')}`
+									`File name cannot contain any of the following characters: ${ILLEGAL_FILENAME_CHARACTERS_FOR_DATE_FORMATTING.join('')} or unpaired square brackets`
 								);
 							} else {
 								this.plugin.settings.dateBasedAllDayFileNameFormat =
@@ -274,7 +279,9 @@ export class SettingsTab extends PluginSettingTab {
 }
 
 function isIllegalFileName(fileName: string): boolean {
-	return ILLEGAL_FILENAME_CHARACTERS_FOR_DATE_FORMATTING.some((illegal) =>
-		fileName.contains(illegal)
+	return (
+		ILLEGAL_FILENAME_CHARACTERS_FOR_DATE_FORMATTING.some((illegal) =>
+			fileName.contains(illegal)
+		) || UNPAIRED_SQUARE_BRACKET_REGEX.test(fileName)
 	);
 }
