@@ -11,7 +11,17 @@ import { importJson } from './import-json';
 import { updateFrontMatter } from './update-front-matter';
 import { ImportResult } from './utils';
 
-const ILLEGAL_FILENAME_CHARACTERS = ['[', ']', ':', '\\', '/', '^', '|', '#'];
+// square brackets are also illegal filename characters,
+// however moment uses those for escaping strings
+// so they are excluded from this list
+const ILLEGAL_FILENAME_CHARACTERS_FOR_DATE_FORMATTING = [
+	':',
+	'\\',
+	'/',
+	'^',
+	'|',
+	'#',
+];
 
 export class SettingsTab extends PluginSettingTab {
 	plugin: DayOneImporter;
@@ -101,7 +111,7 @@ export class SettingsTab extends PluginSettingTab {
 						if (value !== '') {
 							if (isIllegalFileName(value)) {
 								new Notice(
-									`File name cannot contain any of the following characters: ${ILLEGAL_FILENAME_CHARACTERS.join('')}`
+									`File name cannot contain any of the following characters: ${ILLEGAL_FILENAME_CHARACTERS_FOR_DATE_FORMATTING.join('')}`
 								);
 							} else {
 								this.plugin.settings.dateBasedFileNameFormat =
@@ -124,7 +134,7 @@ export class SettingsTab extends PluginSettingTab {
 						if (value !== '') {
 							if (isIllegalFileName(value)) {
 								new Notice(
-									`File name cannot contain any of the following characters: ${ILLEGAL_FILENAME_CHARACTERS.join('')}`
+									`File name cannot contain any of the following characters: ${ILLEGAL_FILENAME_CHARACTERS_FOR_DATE_FORMATTING.join('')}`
 								);
 							} else {
 								this.plugin.settings.dateBasedAllDayFileNameFormat =
@@ -264,7 +274,7 @@ export class SettingsTab extends PluginSettingTab {
 }
 
 function isIllegalFileName(fileName: string): boolean {
-	return ILLEGAL_FILENAME_CHARACTERS.some((illegal) =>
+	return ILLEGAL_FILENAME_CHARACTERS_FOR_DATE_FORMATTING.some((illegal) =>
 		fileName.contains(illegal)
 	);
 }
