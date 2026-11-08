@@ -258,6 +258,24 @@
 			"richText": "{\"contents\":[{\"embeddedObjects\":[{\"identifier\":\"6F9B2DC7EADE4242A80DC76470D2264E\",\"type\":\"video\"}]},{\"embeddedObjects\":[{\"identifier\":\"08514236013D4E4A9389BFDC24A5F727\",\"type\":\"audio\"}]}],\"meta\":{\"created\":{\"platform\":\"com.bloombuilt.dayone-ios\",\"version\":2602},\"small-lines-removed\":true,\"version\":1}}",
 			"creationDate": "2024-04-21T22:45:51Z",
 			"starred": false
+		},
+		{
+			"modifiedDate": "1951-10-17T10:18:42Z",
+			"isPinned": false,
+			"creationOSVersion": "14.3.1",
+			"creationDeviceType": "MacBook Pro",
+			"editingTime": 0,
+			"creationOSName": "macOS",
+			"richText": "{\"contents\":[{\"text\":\"This is a really old entry\"}],\"meta\":{\"created\":{\"platform\":\"com.bloombuilt.dayone-mac\",\"version\":1552},\"small-lines-removed\":true,\"version\":1}}",
+			"duration": 0,
+			"isAllDay": true,
+			"text": "This is a really old entry",
+			"uuid": "C4E5ACF7E68E4E08A20A8325C8235994",
+			"creationDeviceModel": "MacBookPro18,3",
+			"creationDevice": "marcBook Pro",
+			"timeZone": "Europe/London",
+			"starred": false,
+			"creationDate": "1951-10-17T10:18:42Z"
 		}
 	]
 }

@@ -76,8 +76,8 @@ export async function importJson(
 					// Day One seems to export escaped full stops for some reason, so replace those with just a regular full stop
 					buildFileBody(item),
 					{
-						ctime: new Date(item.creationDate).getTime(),
-						mtime: new Date(item.modifiedDate).getTime(),
+						ctime: clampedFileDate(new Date(item.creationDate).getTime()),
+						mtime: clampedFileDate(new Date(item.modifiedDate).getTime()),
 					}
 				);
 
@@ -180,4 +180,11 @@ function buildMediaReplacement(item: DayOneItem, match: RegExpMatchArray) {
 		replace: match[0],
 		with: match[0],
 	};
+}
+
+function clampedFileDate(unclampedTime: number) {
+	if (unclampedTime < 0) {
+		return 0;
+	}
+	return unclampedTime;
 }

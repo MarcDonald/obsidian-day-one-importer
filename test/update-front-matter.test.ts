@@ -78,8 +78,8 @@ describe('updateFrontMatter', () => {
 				fileManager,
 				importEvents
 			)
-		).rejects.toThrowError('No file found');
-		expect(vault.getFileByPath).toBeCalledWith('testDir/testInput.json');
+		).rejects.toThrow('No file found');
+		expect(vault.getFileByPath).toHaveBeenCalledWith('testDir/testInput.json');
 	});
 
 	test('should error if file name has already been updated in this import', async () => {
@@ -243,8 +243,8 @@ describe('updateFrontMatter', () => {
 
 		// Returned object
 		expect(result).toEqual({
-			total: 5,
-			successCount: 5,
+			total: 6,
+			successCount: 6,
 			ignoreCount: 0,
 			failures: [],
 			invalidEntries: [],
@@ -279,8 +279,8 @@ describe('updateFrontMatter', () => {
 
 		// Returned object
 		expect(result).toEqual({
-			total: 5,
-			successCount: 5,
+			total: 6,
+			successCount: 6,
 			ignoreCount: 0,
 			failures: [],
 			invalidEntries: [],
@@ -321,18 +321,19 @@ describe('updateFrontMatter', () => {
 				{
 					entryId: '1461153D91EC48C180C606C853FBFD83',
 					creationDate: '2024-04-17T23:00:00Z',
-					reason: new ZodError([
-						{
-							code: 'invalid_type',
-							expected: 'string',
-							received: 'object',
-							path: ['text'],
-							message: 'Expected string, received object',
-						},
-					]),
+					reason: expect.any(ZodError),
 				},
 			],
 		});
+
+		expect(result.invalidEntries[0].reason.issues).toEqual([
+			{
+				expected: 'string',
+				code: 'invalid_type',
+				path: ['text'],
+				message: 'Invalid input: expected string, received object',
+			},
+		]);
 
 		expect(frontmatterObjs[0]).toEqual({
 			activity: 'Train',
