@@ -1,2 +1,2 @@
 npm test
-lint-staged
+npx lint-staged
