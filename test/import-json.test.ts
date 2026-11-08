@@ -410,8 +410,8 @@ describe('importJson', () => {
 
 		// Returned object
 		expect(result).toEqual({
-			total: 5,
-			successCount: 5,
+			total: 6,
+			successCount: 6,
 			ignoreCount: 0,
 			failures: [],
 			invalidEntries: [],
@@ -521,30 +521,59 @@ describe('importJson', () => {
 			coordinates: `51.503360748291016,-0.11951349675655365`,
 		});
 
+		// entry 5 - Pre-1970
+		expect(vault.create.mock.calls[5][0]).toBe(
+			'day-one-out/C4E5ACF7E68E4E08A20A8325C8235994.md'
+		);
+		expect(vault.create.mock.calls[2][1]).toBe(
+			'"This text is in quotes"\n' +
+				'This-text-is-hyphenated\n' +
+				'(This text is in parentheses)\n\n' +
+				'Dolore ex commodo aliqua irure ullamco quis aliquip. Consectetur et magna ullamco amet nisi. Ut commodo officia laborum aliquip Lorem adipisicing ipsum do amet consequat. Fugiat officia dolore aute do quis sunt exercitation. Pariatur sint exercitation ut eiusmod velit sint exercitation ullamco minim commodo qui tempor adipisicing esse amet. Lorem ad sit ullamco dolore labore commodo ea ad officia quis deserunt. Adipisicing duis qui elit ipsum aliqua ipsum ea.'
+		);
+		expect(vault.create.mock.calls[2][2]).toEqual({
+			ctime: 1713563316000,
+			mtime: 1713563332000,
+		});
+		expect(frontmatterObjs[2]).toEqual({
+			creationDate: '2024-04-19T21:48',
+			location: 'Dundas Castle, Edinburgh, United Kingdom',
+			coordinates: `55.97501754760742,-3.4143447875976562`,
+			modifiedDate: '2024-04-19T21:48',
+			pinned: true,
+			uuid: '876E72B228F847379F296B1698CA3F61',
+		});
+
 		expect(importEvents.trigger).toHaveBeenNthCalledWith(
 			1,
 			'percentage-update',
-			20
+			expectPercentageIncrement(6, 1)
 		);
 		expect(importEvents.trigger).toHaveBeenNthCalledWith(
 			2,
 			'percentage-update',
-			40
+			expectPercentageIncrement(6, 2)
 		);
 		expect(importEvents.trigger).toHaveBeenNthCalledWith(
 			3,
 			'percentage-update',
-			60
+			expectPercentageIncrement(6, 3)
 		);
 		expect(importEvents.trigger).toHaveBeenNthCalledWith(
 			4,
 			'percentage-update',
-			80
+			expectPercentageIncrement(6, 4)
 		);
 		expect(importEvents.trigger).toHaveBeenNthCalledWith(
 			5,
 			'percentage-update',
-			100
+			expectPercentageIncrement(6, 5)
+		);
+
+		expect(importEvents.trigger).toHaveBeenNthCalledWith(
+			6,
+			'percentage-update',
+			expectPercentageIncrement(6, 6)
 		);
 	});
 
@@ -713,4 +742,44 @@ describe('importJson', () => {
 			100
 		);
 	});
+
+	test('handles creation date prior to 1970', async () => {
+		vault.getFileByPath.mockReturnValue(jest.fn() as unknown as TFile);
+		vault.read.mockResolvedValue(
+			JSON.stringify({
+				entries: [
+					{
+						...mockEntry,
+						creationDate: '1951-04-19T21:55:53Z',
+						modifiedDate: '1951-05-20T21:55:53Z',
+					},
+				],
+			})
+		);
+
+		await importJson(
+			vault,
+			{
+				...DEFAULT_SETTINGS,
+				dateBasedFileNames: false,
+			},
+			fileManager,
+			importEvents
+		);
+
+		expect(vault.create.mock.calls[0][0]).toBe(
+			`day-one-out/${mockEntry.uuid}.md`
+		);
+		expect(vault.create.mock.calls[0][2]).toEqual({
+			ctime: 0,
+			mtime: 0,
+		});
+	});
 });
+
+function expectPercentageIncrement(
+	totalIncrements: number,
+	thisIncrement: number
+) {
+	return expect.closeTo((100 / totalIncrements) * thisIncrement, 5);
+}

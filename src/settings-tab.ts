@@ -94,7 +94,7 @@ export class SettingsTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName('Date-based file names (may cause collisions)')
 			.setDesc(
-				"Use entry's creation date as the file name. This may cause collisions and files to be overwritten if two entries have the same creation date/time." +
+				"Use entry's creation date as the file name. This may cause collisions and files to be overwritten if two entries have the same creation date/time. " +
 					"If this option is disabled then the entry's UUID will be used as the file name. This guarantees no collisions."
 			)
 			.addToggle((toggle) =>

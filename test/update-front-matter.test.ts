@@ -243,8 +243,8 @@ describe('updateFrontMatter', () => {
 
 		// Returned object
 		expect(result).toEqual({
-			total: 5,
-			successCount: 5,
+			total: 6,
+			successCount: 6,
 			ignoreCount: 0,
 			failures: [],
 			invalidEntries: [],
@@ -279,8 +279,8 @@ describe('updateFrontMatter', () => {
 
 		// Returned object
 		expect(result).toEqual({
-			total: 5,
-			successCount: 5,
+			total: 6,
+			successCount: 6,
 			ignoreCount: 0,
 			failures: [],
 			invalidEntries: [],
