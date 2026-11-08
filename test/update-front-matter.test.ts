@@ -321,18 +321,19 @@ describe('updateFrontMatter', () => {
 				{
 					entryId: '1461153D91EC48C180C606C853FBFD83',
 					creationDate: '2024-04-17T23:00:00Z',
-					reason: new ZodError([
-						{
-							code: 'invalid_type',
-							expected: 'string',
-							received: 'object',
-							path: ['text'],
-							message: 'Expected string, received object',
-						},
-					]),
+					reason: expect.any(ZodError),
 				},
 			],
 		});
+
+		expect(result.invalidEntries[0].reason.issues).toEqual([
+			{
+				expected: 'string',
+				code: 'invalid_type',
+				path: ['text'],
+				message: 'Invalid input: expected string, received object',
+			},
+		]);
 
 		expect(frontmatterObjs[0]).toEqual({
 			activity: 'Train',
