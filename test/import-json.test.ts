@@ -78,8 +78,8 @@ describe('importJson', () => {
 				fileManager,
 				importEvents
 			)
-		).rejects.toThrowError('No file found');
-		expect(vault.getFileByPath).toBeCalledWith('testDir/testInput.json');
+		).rejects.toThrow('No file found');
+		expect(vault.getFileByPath).toHaveBeenCalledWith('testDir/testInput.json');
 	});
 
 	test('should error if file name has already been used in this import', async () => {
